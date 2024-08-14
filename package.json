@@ -1,7 +1,7 @@
 {
   "name": "taki-popups-service",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
@@ -29,7 +29,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.7.5",
-    "tailwindcss": "^3.2.4"
+    "tailwindcss": "^3.2.4",
+    "taki-popups-service": "^0.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

@@ -1,2 +1,2 @@
-import { TakiPopups } from './src/TakiPopups';
+export  { TakiPopups } from './src/TakiPopups';
 
