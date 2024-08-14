@@ -1,6 +1,4 @@
-
 const useGoogleFonts = () => {
-  // Ensure the fonts are only added once
   if (!document.querySelector('link[href*="fonts.googleapis.com"]')) {
     const linkElement = document.createElement('link');
     linkElement.setAttribute(
@@ -11,7 +9,7 @@ const useGoogleFonts = () => {
     document.head.appendChild(linkElement);
   }
 
-  return null; // This component doesn't render anything
+  return null;
 };
 
 export default useGoogleFonts;

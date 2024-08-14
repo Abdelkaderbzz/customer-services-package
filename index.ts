@@ -1,2 +1,1 @@
-export  { TakiPopups } from './src/TakiPopups';
-
+export { TakiPopups } from './src/package/TakiPopups';
