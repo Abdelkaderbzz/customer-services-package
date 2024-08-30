@@ -1,45 +1,32 @@
+// socketService.js
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Socket, io } from 'socket.io-client';
-import { ListType } from '../package/TakiPopups';
 
-class SocketManager implements ISocketManager {
-  private socket: Socket | null;
+const BASE_SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL;
 
-  constructor() {
-    this.socket = null;
-    this._connectSocket();
-  }
+let socket: Socket<DefaultEventsMap, DefaultEventsMap>;
 
-  public _connectSocket(): void {
-    if (this.socket) return;
-    const socket = io(import.meta.env.VITE_APP_SOCKET_BASE_URL);
-    this.socket = socket;
-    socket.on('connect', () => {
-      this.socket = socket;
-      this._listen();
-    });
-    socket.on('error', (e) => {
-      console.error('socket error', e);
-    });
-  }
+export const initiateSocket = () => {
+  socket = io(BASE_SOCKET_URL, {
+    transports: ['websocket'],
+    secure: true,
+  });
+};
 
-  public _sendMessage(event: string, message: IMessage): void {
-    if (!this.socket) return;
-    this.socket.emit(event, message);
-  }
+export const disconnectSocket = (): void => {
+  if (socket) socket.disconnect();
+};
 
-  private _listen(): void {
-    this.socket?.on(SOCKET_GET_MESSAGE, (socket: Socket) => {
-      console.log(socket);
-    });
-  }
-}
+export const subscribeToEvent = <T>(
+  eventName: string,
+  callback: (data: T) => void
+): void => {
+  if (!socket) return;
+  socket.on(eventName, callback);
+};
 
-export interface ISocketManager {
-  _connectSocket(): void;
-  _sendMessage(event: string, message: IMessage): void;
-}
-
-interface IMessage {
-  [key: string]: string | boolean | number | Date | Array<ListType>;
-}
-export const socketManager = new SocketManager();
+export const emitEvent = <T>(eventName: string, data: T): void =>
+{
+  if (!socket) return;
+  socket.emit(eventName, data);
+};

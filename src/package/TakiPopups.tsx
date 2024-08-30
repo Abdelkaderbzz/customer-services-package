@@ -1,29 +1,58 @@
-import io from 'socket.io-client';
+import { useEffect } from 'react';
 import useGoogleFonts from '../hooks/useGoogleFonts';
 import { getGuestId, getGuestName } from '../utils/generateRandomStrings';
+import {
+  disconnectSocket,
+  emitEvent,
+  initiateSocket,
+  subscribeToEvent,
+} from '../utils/socket';
+import ReactDOM from 'react-dom/client';
+import PopupService from '../components/PopupService/PopupService';
+import { ITakiPopupsProps } from './TakiPopups.types';
+import BannerService from '../components/BannerService/BannerService';
 
-export type ListType = string | number;
-export interface ITakiPopupsProps {
-  memberId?: string | number;
-  name?: string;
-  meta_data?: {
-    [key: string]: string | boolean | number | Date | Array<ListType>;
-  };
-}
-export const TakiPopups = ({ name, memberId , meta_data }: ITakiPopupsProps) => {
-  const BASE_SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL;
-  const socket = io(BASE_SOCKET_URL);
+export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
   useGoogleFonts();
-  socket.emit('hey-server-web', {
-    name: name || getGuestName(),
-    memberId: memberId || getGuestId(),
-    ...meta_data
-  });
+  const renderService = ({ response, serviceType }: any) =>
+  {
+    console.log(response)
+    const popupContainer = document.createElement('div');
+    popupContainer.id = 'popup-service-container';
+    document.body.appendChild(popupContainer);
+    const root = ReactDOM.createRoot(popupContainer);
+    // const unmount = () => {
+    //   root.unmount();
+    //   document.body.removeChild(popupContainer);
+    // };
 
-  socket.on(
-    'receive-popup-mobile',
-    async ({ id, token, content, priority }) => {}
-  );
-
-  return null
+    root.render(
+      serviceType === 'popup' ? (
+        <PopupService response={{...response,memberId,name}} />
+      ) : (
+        <BannerService response={response}/>
+      )
+    );
+  };
+  useEffect(() => {
+    initiateSocket();
+    emitEvent('hey-server-web', {
+      name: name || getGuestName(),
+      memberId: memberId || getGuestId(),
+      domaineName: window.location.host,
+      ...meta_data,
+    });
+    subscribeToEvent<string>('receive-popup-mobile', (response: any) => {
+      renderService({ response, serviceType: 'popup' });
+    });
+    
+    subscribeToEvent<string>('receive-banner-web', (response: any) => {
+      renderService({ response, serviceType: 'banner' });
+    });
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
+  
+  return null;
 };
