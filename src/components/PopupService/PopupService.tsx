@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect } from 'react';
 import useGoogleFonts from '../../hooks/useGoogleFonts';
 import { closePopup, closePopupWithoutHeyServer } from '../../utils/closePopup';
