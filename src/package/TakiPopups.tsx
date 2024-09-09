@@ -39,7 +39,7 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
     emitEvent('hey-server-web', {
       name: name || getGuestName(),
       memberId: memberId || getGuestId(),
-      domaineName: window.location.host,
+      domaineName: 'studentnew.takiacademy.me',
       ...meta_data,
     });
     subscribeToEvent<string>('receive-popup-mobile', (response: any) => {
