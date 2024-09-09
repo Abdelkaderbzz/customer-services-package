@@ -25,7 +25,8 @@ Once installed, you can integrate TakiPopups into your website by importing the 
 Example
 Here’s how to use the TakiPopups component in your project:
 
-import { TakiPopups } from 'TakiPopups';
+import { TakiPopups } from 'taki-popups-service';
+
 
 const name = 'Adem';
 const memberId = '546363546';

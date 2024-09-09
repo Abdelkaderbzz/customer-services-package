@@ -1,6 +1,6 @@
 export const closePopup = () => {
   closePopupWithoutHeyServer();
-  window.localStorage.setItem('currentPopupPriority', '0');
+  window.localStorage.setItem('popupPriority', '0');
   //dataOfUser['href'] = window.location.href;
   // socket.emit('hey-server-web', dataOfUser);
 };

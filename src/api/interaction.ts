@@ -13,6 +13,7 @@ export const postComment = async (body:any, endPoint:string, popupToken:string) 
       },
       body: JSON.stringify(body),
     });
+    return response.json();
   } catch (error) {
     console.error('Error:', error);
   }
@@ -28,6 +29,7 @@ export const postReact = async (body:any, endPoint:string, popupToken:string) =>
       },
       body: JSON.stringify(body),
     });
+    return response.json();
   } catch (error) {
     console.error('Error:', error);
   }
