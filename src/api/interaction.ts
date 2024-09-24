@@ -3,7 +3,6 @@ const SUBSCRIBE_URL = import.meta.env.VITE_APP_BASE_URL;
 
 export const postComment = async (body:any, endPoint:string, popupToken:string) => {
   try {
-
     const response = await fetch(BASE_URL + endPoint, {
       method: 'POST',
       headers: {

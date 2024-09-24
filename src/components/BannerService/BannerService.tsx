@@ -11,9 +11,12 @@ import {
   reactionsListSpan,
   urlAction,
 } from './style';
+import { closeBanner } from '../../utils/closePopup';
+import { postReact } from '../../api/interaction';
 
 const BannerService = ({ response }: any) => {
   const {
+    dataOfUser,
     settings,
     actions,
     avatar,
@@ -42,7 +45,44 @@ const BannerService = ({ response }: any) => {
   };
   const bannerStyleClass =
     settings?.bannerStyle === 'floating' && 'floating_banner';
-
+  const postBannerReact = (emoji) => {
+    postReact(
+      {
+        name: dataOfUser?.name,
+        code: emoji,
+        participatorId: dataOfUser?.memberId,
+      },
+      `/banners/${bannerId}/reacts`,
+      token
+    ).then(() => closeBanner(dataOfUser));
+  };
+  const bannerUrlHandler = ({
+    url,
+    isUrlOpenedInNewTab,
+    closeBannerOnClick,
+  }) => {
+    if (isUrlOpenedInNewTab) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
+    if (closeBannerOnClick)
+    { 
+      closeBanner(dataOfUser);
+    }
+  };
+  const closeBannerHandler = () =>
+  {
+      postReact(
+        {
+          name: dataOfUser?.name,
+          code: 'x-close',
+          participatorId: dataOfUser?.memberId,
+        },
+        `/banners/${bannerId}/reacts`,
+        token
+      ).then(() => closeBanner(dataOfUser));
+  };
   return (
     <div
       style={bannerStyle}
@@ -64,7 +104,7 @@ const BannerService = ({ response }: any) => {
               (reaction: string, index: number) => (
                 <span
                   style={reactionsListSpan}
-                  onClick={() => console.log('banner closed')}
+                  onClick={() => postBannerReact(reaction)}
                   key={index}
                 >
                   {reaction}
@@ -74,7 +114,10 @@ const BannerService = ({ response }: any) => {
           </div>
         )}
         {actions.actionType === 'url' && (
-          <p onClick={() => console.log('banner closed')} style={urlAction}>
+          <p
+            onClick={() => bannerUrlHandler(actions?.properties?.url)}
+            style={urlAction}
+          >
             {actions.properties.url.urlText}
           </p>
         )}
@@ -82,7 +125,7 @@ const BannerService = ({ response }: any) => {
       {dismissButton && (
         <VscChromeClose
           style={bannerServicePreviewSvg}
-          onClick={() => console.log('banner closed')}
+          onClick={closeBannerHandler}
         />
       )}
     </div>

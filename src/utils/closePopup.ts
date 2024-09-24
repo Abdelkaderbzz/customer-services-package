@@ -1,10 +1,23 @@
-export const closePopup = () => {
+import { emitEvent } from "./socket";
+
+export const closePopup = (dataOfUser:any) => {
   closePopupWithoutHeyServer();
   window.localStorage.setItem('popupPriority', '0');
   //dataOfUser['href'] = window.location.href;
-  // socket.emit('hey-server-web', dataOfUser);
+  emitEvent('hey-server-web', dataOfUser);
 };
 export const closePopupWithoutHeyServer = () => {
   document.querySelector('.popup-taki')?.remove();
   document.querySelector('.overlay-popups')?.remove();
+};
+export const closeBanner = (dataOfUser: any) =>
+{
+  emitEvent('hey-server-web', dataOfUser);
+  closeBannerWithoutHeyServer();
+  window.localStorage.setItem('bannerPriority', '0');
+  //dataOfUser['href'] = window.location.href;
+  // socket.emit('hey-server-web', dataOfUser);
+};
+export const closeBannerWithoutHeyServer = () => {
+  document.querySelector('.banner_service_preview')?.remove();
 };

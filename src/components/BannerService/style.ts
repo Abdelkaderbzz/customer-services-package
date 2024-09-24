@@ -1,3 +1,5 @@
+import { current } from "@reduxjs/toolkit";
+
 export const bannerServicePreview = {
   fontFamily: 'Poppins',
     boxSizing: 'border-box',
@@ -55,6 +57,7 @@ export const urlAction = {
   fontWeight: 600,
   color: '#fff',
   height: '100%',
+  cursor: 'pointer',
 };
 
 export const bannerServicePreviewSvg = {

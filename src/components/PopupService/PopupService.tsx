@@ -6,7 +6,7 @@ import { translations } from '../../utils/translation';
 import { postComment, postReact } from '../../api/interaction';
 
 const PopupService = ({
-  response: { id, priority, content, token, name, memberId },
+  response: { id, priority, content, token, dataOfUser },
 }: any) => {
   useGoogleFonts();
   const getTranslation = (key: any) => {
@@ -16,7 +16,6 @@ const PopupService = ({
   useEffect(() => {
     const overLay = document.querySelector('.overlay-popups');
     const normalClose = document.querySelector('.close-btn');
-    console.log(overLay, normalClose);
     overLay?.addEventListener('click', () => {
       closePopupWithoutHeyServer();
     });
@@ -44,14 +43,13 @@ const PopupService = ({
       window.localStorage.setItem('', '0');
       await postReact(
         {
-          name,
+          name: dataOfUser?.name,
           code: 'x-close',
-          participatorId: memberId,
+          participatorId: dataOfUser?.memberId,
         },
         `/popups/${id}/reacts`,
         token
-      );
-      closePopup();
+      ).then(() => closePopup(dataOfUser));
     });
     const form = document.querySelector('.popup-comment-form');
     form?.addEventListener('submit', async (event) => {
@@ -62,14 +60,13 @@ const PopupService = ({
         window.localStorage.setItem('popupPriority', '0');
         await postComment(
           {
-            name,
+            name: dataOfUser?.name,
             body: commentValue,
-            participatorId: memberId,
+            participatorId: dataOfUser?.memberId,
           },
           `/popups/${id}/comments`,
           token
-        );
-        closePopup();
+        ).then(() => closePopup(dataOfUser));
         // socket.emit("hey-server-web", { dataOfUser, href: window.location.href });
       }
     });
@@ -79,11 +76,14 @@ const PopupService = ({
         const name = emojiButton.textContent;
         window.localStorage.setItem('popupPriority', '0');
         await postReact(
-          { name, code: name, participatorId: memberId },
+          {
+            name: dataOfUser?.name,
+            code: name,
+            participatorId: dataOfUser?.memberId,
+          },
           `/popups/${id}/reacts`,
           token
-        );
-        closePopup();
+        ).then(() => closePopup(dataOfUser));
         // socket.emit("hey-server-web", { dataOfUser, href: window.location.href });
       });
     });
