@@ -8,7 +8,6 @@ import { postComment, postReact } from '../../api/interaction';
 const PopupService = ({
   response: { id, priority, content, token, dataOfUser },
 }: any) => {
-  useGoogleFonts();
   const getTranslation = (key: any) => {
     const language = localStorage.getItem('i18nextLng') || 'en';
     return translations[language]?.[key] || translations['en'][key];
