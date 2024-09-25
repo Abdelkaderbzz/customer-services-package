@@ -27,6 +27,12 @@ const PopupService = ({
         button.style.pointerEvents = 'auto';
       }
     });
+
+    const sendBtn = document.querySelector('.btn-send-comment');
+    const lang = window.localStorage.getItem('i18nextLng');
+    if (sendBtn && lang === 'ar') {
+      sendBtn.style.rotate = '180deg';
+    }
     const dontShowAgainText = getTranslation('dont_show_again');
     const dontShowAgainButton: any = document.querySelector('.dont-show-again');
     if (dontShowAgainButton) {
