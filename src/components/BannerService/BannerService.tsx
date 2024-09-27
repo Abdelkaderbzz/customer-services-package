@@ -1,5 +1,5 @@
 // @ts-nocheck
-
+'use client'
 import { VscChromeClose } from 'react-icons/vsc';
 import {
   bannerServicePreview,

@@ -1,4 +1,4 @@
-
+'use client'
 import { useEffect } from 'react';
 import useGoogleFonts from '../hooks/useGoogleFonts';
 import { getGuestId, getGuestName } from '../utils/generateRandomStrings';

@@ -1,6 +1,6 @@
 // @ts-nocheck
+'use client';
 import { useEffect } from 'react';
-import useGoogleFonts from '../../hooks/useGoogleFonts';
 import { closePopup, closePopupWithoutHeyServer } from '../../utils/closePopup';
 import { translations } from '../../utils/translation';
 import { postComment, postReact } from '../../api/interaction';
