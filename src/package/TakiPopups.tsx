@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useEffect } from 'react';
 import useGoogleFonts from '../hooks/useGoogleFonts';
 import { getGuestId, getGuestName } from '../utils/generateRandomStrings';
@@ -13,6 +13,7 @@ import PopupService from '../components/PopupService/PopupService';
 import { ITakiPopupsProps } from './TakiPopups.types';
 import BannerService from '../components/BannerService/BannerService';
 import { closePopup } from '../utils/closePopup';
+import useUrl from '../hooks/useUrl';
 
 export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
   useGoogleFonts();
@@ -45,6 +46,8 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
       )
     );
   };
+
+  useUrl(dataOfUser);
   useEffect(() => {
     initiateSocket();
     emitEvent('hey-server-web', dataOfUser);
