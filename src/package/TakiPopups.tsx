@@ -48,8 +48,14 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
       )
     );
   };
-  onMessageListener()
-  requestPermission({ devices:'web', domaineName:window.location.href, memberId, metaData:{...meta_data,firstName:name} });
+  onMessageListener();
+  requestPermission({
+    name,
+    devices: 'web',
+    domaineName: window.location.hostname,
+    memberId,
+    metaData: meta_data,
+  });
   useUrl(dataOfUser);
   useEffect(() => {
     initiateSocket();
