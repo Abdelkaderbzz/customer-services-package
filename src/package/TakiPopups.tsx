@@ -14,6 +14,8 @@ import { ITakiPopupsProps } from './TakiPopups.types';
 import BannerService from '../components/BannerService/BannerService';
 import { closePopup } from '../utils/closePopup';
 import useUrl from '../hooks/useUrl';
+import { requestPermission } from '../firebase/permission';
+import { onMessageListener } from '../firebase/message';
 
 export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
   useGoogleFonts();
@@ -46,7 +48,8 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
       )
     );
   };
-
+  onMessageListener()
+  requestPermission({ devices:'web', domaineName:window.location.href, memberId, metaData:{...meta_data,firstName:name} });
   useUrl(dataOfUser);
   useEffect(() => {
     initiateSocket();
