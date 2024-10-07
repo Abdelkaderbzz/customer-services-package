@@ -1,11 +1,10 @@
 // @ts-nocheck
-'use client'
 import { VscChromeClose } from 'react-icons/vsc';
 import {
   bannerServicePreview,
   bannerServicePreviewContent,
   bannerServicePreviewItems,
-  bannerServicePreviewSvg,
+  floatingBannerStyle,
   imageUserStyle,
   reactionsList,
   reactionsListSpan,
@@ -13,6 +12,8 @@ import {
 } from './style';
 import { closeBanner } from '../../utils/closePopup';
 import { postReact } from '../../api/interaction';
+import { getContrastColor } from '../../utils/getContrastColor';
+import { getTextDirection } from '../../utils/checkLanguage';
 
 const BannerService = ({ response }: any) => {
   const {
@@ -31,20 +32,20 @@ const BannerService = ({ response }: any) => {
   const baseUrl = import.meta.env.VITE_APP_BASE_URL;
   const userAvatar = `${baseUrl}/users/${avatar}`;
   const bannerStyle: any = {
-    ...(settings.bannerPosition === 'top' ? { top: 0 } : { bottom: 0 }),
-    ...(settings.bannerStyle === 'floating'
+    ...(settings?.bannerPosition === 'top' ? { top: 0 } : { bottom: 0 }),
+    ...(settings?.bannerStyle === 'floating' ? { ...floatingBannerStyle } : {}),
+    ...(settings?.bannerStyle === 'floating'
       ? { width: 'calc(100% - 40px)' }
       : { width: '100%' }),
-    ...(settings.bannerStyle === 'floating'
+    ...(settings?.bannerStyle === 'floating'
       ? {}
       : {
           boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
         }),
-    background: settings.background,
+    direction: getTextDirection(content),
+    background: settings?.background,
     ...bannerServicePreview,
   };
-  const bannerStyleClass =
-    settings?.bannerStyle === 'floating' && 'floating_banner';
   const postBannerReact = (emoji) => {
     postReact(
       {
@@ -66,28 +67,23 @@ const BannerService = ({ response }: any) => {
     } else {
       window.location.href = url;
     }
-    if (closeBannerOnClick)
-    { 
+    if (closeBannerOnClick) {
       closeBanner(dataOfUser);
     }
   };
-  const closeBannerHandler = () =>
-  {
-      postReact(
-        {
-          name: dataOfUser?.name,
-          code: 'x-close',
-          participatorId: dataOfUser?.memberId,
-        },
-        `/banners/${bannerId}/reacts`,
-        token
-      ).then(() => closeBanner(dataOfUser));
+  const closeBannerHandler = () => {
+    postReact(
+      {
+        name: dataOfUser?.name,
+        code: 'x-close',
+        participatorId: dataOfUser?.memberId,
+      },
+      `/banners/${bannerId}/reacts`,
+      token
+    ).then(() => closeBanner(dataOfUser));
   };
   return (
-    <div
-      style={bannerStyle}
-      className={`banner_service_preview ${bannerStyleClass}`}
-    >
+    <div style={bannerStyle} className={'banner_service_preview'}>
       <div style={bannerServicePreviewItems}>
         {showSender && (
           <img
@@ -124,7 +120,11 @@ const BannerService = ({ response }: any) => {
       </div>
       {dismissButton && (
         <VscChromeClose
-          style={bannerServicePreviewSvg}
+          style={{
+            color: getContrastColor(settings?.background),
+            fontSize: '18px',
+            cursor: 'pointer',
+          }}
           onClick={closeBannerHandler}
         />
       )}
