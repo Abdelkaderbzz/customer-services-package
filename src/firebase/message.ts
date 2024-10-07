@@ -11,7 +11,6 @@ export const playNotificationSound = () => {
 
 export function onMessageListener() {
   onMessage(messaging, (payload) => {
-    console.log("Foreground message received: ", payload.data);
     const title = payload.data?.title || "";
     const options = {
       body: payload.data?.body,

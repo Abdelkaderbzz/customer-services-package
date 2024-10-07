@@ -1,8 +1,6 @@
-import { current } from "@reduxjs/toolkit";
-
 export const bannerServicePreview = {
   fontFamily: 'Poppins',
-    boxSizing: 'border-box',
+  boxSizing: 'border-box',
   position: 'fixed',
   left: '0',
   textAlign: 'center',
@@ -16,7 +14,11 @@ export const bannerServicePreview = {
   gap: '15px',
   height: '56px',
 };
-
+export const floatingBannerStyle = {
+  margin: '20px',
+  borderRadius: '12px',
+  boxShadow: '0 4px 16px #0071b252',
+};
 export const bannerServicePreviewItems = {
   width: '100%',
   display: 'flex',
@@ -32,9 +34,11 @@ export const bannerServicePreviewContent = {
   minWidth: '200px',
   backgroundColor: 'transparent',
   color: '#fff',
-  fontFamily: 'Cairo',
-  fontWeight: 300,
+  fontFamily: 'Poppins',
+  fontWeight: 400,
   wordBreak: 'break-all',
+  flex: 1,
+  textAlign: 'start',
 };
 
 export const reactionsList = {
@@ -60,11 +64,6 @@ export const urlAction = {
   cursor: 'pointer',
 };
 
-export const bannerServicePreviewSvg = {
-  filter: 'invert(1)',
-  fontSize: '18px',
-  cursor: 'pointer',
-};
 export const imageUserStyle = {
   height: '38px',
   width: '38px',
