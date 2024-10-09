@@ -8,47 +8,43 @@ import {
   initiateSocket,
   subscribeToEvent,
 } from '../utils/socket';
-import ReactDOM from 'react-dom/client';
-import PopupService from '../components/PopupService/PopupService';
 import { ITakiPopupsProps } from './TakiPopups.types';
-import BannerService from '../components/BannerService/BannerService';
 import { closePopup } from '../utils/closePopup';
 import useUrl from '../hooks/useUrl';
 import { requestPermission } from '../firebase/permission';
 import { onMessageListener } from '../firebase/message';
+import { fetchFirstPopup, fetchPopupsUsingUrl, savePopupInIndexedDb } from '../cache/indexedDB';
+import { renderService } from '../hooks/renderService';
 
 export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
   useGoogleFonts();
   const dataOfUser = {
     name: name || getGuestName(),
     memberId: memberId || getGuestId(),
-    domaineName: window.location.hostname,
+    // domaineName: window.location.hostname,
+    domaineName: 'listninja.netlify.app',
     ...meta_data,
   };
   window.localStorage.setItem('popupPriority', '0');
   window.localStorage.setItem('bannerPriority', '0');
-  const renderService = ({ response, serviceType }: any) => {
-    let popupContainer = document.getElementById('popup-service-container');
 
-    // Create the container only if it doesn't already exist
-    if (!popupContainer) {
-      popupContainer = document.createElement('div');
-      popupContainer.id = 'popup-service-container';
-      document.body.appendChild(popupContainer);
-    }
+  savePopupInIndexedDb();
+  // fetchFirstPopup().then((res) => {
+  //   renderService({ response: res, serviceType: 'popup', dataOfUser });
+  // });
 
-    const root = ReactDOM.createRoot(popupContainer);
-
-    // Render the appropriate component
-    root.render(
-      serviceType === 'popup' ? (
-        <PopupService response={{ ...response, dataOfUser }} />
-      ) : (
-        <BannerService response={{ ...response, dataOfUser }} />
-      )
-    );
-  };
   onMessageListener();
+  useEffect(() => {
+    const currentPath=window.location.pathname
+    fetchPopupsUsingUrl(currentPath).then((res) =>
+    {
+      console.log(res)
+      if (res.length > 0)
+      {
+        renderService({ response: res[0], serviceType: 'popup', dataOfUser });
+      }
+    })
+  }, [window.location.href])
   requestPermission({
     name,
     devices: 'web',
@@ -56,7 +52,6 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
     memberId,
     metaData: meta_data,
   });
-  useUrl(dataOfUser);
   useEffect(() => {
     initiateSocket();
     emitEvent('hey-server-web', dataOfUser);
@@ -66,7 +61,7 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
       if (Number(incomingPopupPriority) >= Number(popupPriority)) {
         window.localStorage.setItem('currentPopupId', response?.id);
         window.localStorage.setItem('popupPriority', incomingPopupPriority);
-        renderService({ response, serviceType: 'popup' });
+        renderService({ response, serviceType: 'popup', dataOfUser });
       }
     });
     subscribeToEvent<string>('cancel-this-popup', ({ canceledIds }: any) => {
@@ -81,7 +76,7 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
       const incomingBannerPriority = response?.settings?.priority;
       if (Number(incomingBannerPriority) >= Number(bannerPriority)) {
         window.localStorage.setItem('bannerPriority', incomingBannerPriority);
-        renderService({ response, serviceType: 'banner' });
+        renderService({ response, serviceType: 'banner', dataOfUser });
       }
     });
     return () => {

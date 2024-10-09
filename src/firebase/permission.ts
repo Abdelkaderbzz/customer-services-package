@@ -7,16 +7,13 @@ import { messaging } from "./firebaseConfig";
 export async function requestPermission(dataOfUser: any){
   const permission = await Notification.requestPermission();
   if (permission === "granted") {
-    console.log("VITE_APP_VAPID_KEY", import.meta.env.VITE_APP_VAPID_KEY);
     try {
       const token = await getToken(messaging, {
         vapidKey: import.meta.env.VITE_APP_VAPID_KEY,
       });
       if (token) {
-        console.log("Token received: ", token);
         sendTokenToServer({...dataOfUser,token});
       } else {
-        console.log("No token received.");
         alert("Token is not generated yet");
       }
     } catch (error) {
@@ -28,7 +25,6 @@ export async function requestPermission(dataOfUser: any){
 }
 
 export const sendTokenToServer = async (dataOfUser:any) => {
-  console.log('sendTokenToServer', dataOfUser);
   return await axios
     .post(import.meta.env.VITE_APP_SUBSCRIBE_URL, dataOfUser)
     .then((response) => {

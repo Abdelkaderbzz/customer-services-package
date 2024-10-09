@@ -8,11 +8,12 @@ const useUrl = (dataOfUser: any) => {
     () => {
       requestAnimationFrame(() => {
         if (currentUrl !== window.location.href) {
-          console.log({ ...dataOfUser, url: window.location.href });
-          emitEvent('hey-server-web', {
-            ...dataOfUser,
-            url: window.location.href,
-          });
+          // console.log({ ...dataOfUser, url: window.location.href });
+          // emitEvent('hey-server-web', {
+          //   ...dataOfUser,
+          //   url: window.location.href,
+          // });
+          console.log(window.location.hostname,'hello world')
           currentUrl = window.location.href;
         }
       });
