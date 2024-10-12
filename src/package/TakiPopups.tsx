@@ -13,7 +13,13 @@ import { closePopup } from '../utils/closePopup';
 import useUrl from '../hooks/useUrl';
 import { requestPermission } from '../firebase/permission';
 import { onMessageListener } from '../firebase/message';
-import { fetchFirstPopup, fetchPopupsUsingUrl, savePopupInIndexedDb } from '../cache/indexedDB';
+import {
+  fetchFirstBanner,
+  fetchFirstPopup,
+  fetchPopupsUsingUrl,
+  saveBannersInIndexedDb,
+  savePopupInIndexedDb,
+} from '../cache/indexedDB';
 import { renderService } from '../hooks/renderService';
 
 export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
@@ -29,22 +35,23 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
   window.localStorage.setItem('bannerPriority', '0');
 
   savePopupInIndexedDb();
+  saveBannersInIndexedDb();
   // fetchFirstPopup().then((res) => {
   //   renderService({ response: res, serviceType: 'popup', dataOfUser });
   // });
+  fetchFirstBanner().then((res) => {
+    renderService({ response: res, serviceType: 'banner', dataOfUser });
+  });
 
   onMessageListener();
-  useEffect(() => {
-    const currentPath=window.location.pathname
-    fetchPopupsUsingUrl(currentPath).then((res) =>
-    {
-      console.log(res)
-      if (res.length > 0)
-      {
-        renderService({ response: res[0], serviceType: 'popup', dataOfUser });
-      }
-    })
-  }, [window.location.href])
+  // useEffect(() => {
+  //   const currentPath = window.location.pathname;
+  //   fetchPopupsUsingUrl(currentPath).then((res) => {
+  //     if (res.length > 0) {
+  //       renderService({ response: res[0], serviceType: 'popup', dataOfUser });
+  //     }
+  //   });
+  // }, [window.location.href]);
   requestPermission({
     name,
     devices: 'web',

@@ -14,6 +14,7 @@ import { closeBanner } from '../../utils/closePopup';
 import { postReact } from '../../api/interaction';
 import { getContrastColor } from '../../utils/getContrastColor';
 import { getTextDirection } from '../../utils/checkLanguage';
+import { addBodyStyles } from '../../utils/addStyle';
 
 const BannerService = ({ response }: any) => {
   const {
@@ -28,7 +29,7 @@ const BannerService = ({ response }: any) => {
     token,
     _id: bannerId,
   } = response;
-
+  if (settings?.bannerStyle !== 'floating') addBodyStyles(settings?.bannerPosition);
   const baseUrl = import.meta.env.VITE_APP_BASE_URL;
   const userAvatar = `${baseUrl}/users/${avatar}`;
   const bannerStyle: any = {
@@ -94,7 +95,7 @@ const BannerService = ({ response }: any) => {
           />
         )}
         <div style={bannerServicePreviewContent}>{content}</div>
-        {actions.actionType === 'reactions' && (
+        {actions?.actionType === 'reactions' && (
           <div style={reactionsList}>
             {actions.properties.reactions.reactionsList.map(
               (reaction: string, index: number) => (

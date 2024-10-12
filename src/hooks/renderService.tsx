@@ -20,21 +20,21 @@ export const renderService = ({ response, serviceType, dataOfUser }: any) => {
     document.body.appendChild(shadowHost);
   }
 
-  // Attach Shadow DOM
   let shadowRoot = shadowHost.shadowRoot;
   if (!shadowRoot) {
     shadowRoot = shadowHost.attachShadow({ mode: 'open' });
   }
 
-  // Create a new div to render the React component into
-  let shadowContainer = shadowRoot.getElementById('shadow-container');
-  if (!shadowContainer) {
-    shadowContainer = document.createElement('div');
-    shadowContainer.id = 'shadow-container';
-    shadowRoot.appendChild(shadowContainer);
+  // Create a unique container for each service type
+  let serviceContainer = shadowRoot.getElementById(
+    `shadow-container-${serviceType}`
+  );
+  if (!serviceContainer) {
+    serviceContainer = document.createElement('div');
+    serviceContainer.id = `shadow-container-${serviceType}`; // Unique ID per service type
+    shadowRoot.appendChild(serviceContainer);
   }
 
-  // Render React component in the shadow DOM container
-  const root = ReactDOM.createRoot(shadowContainer);
+  const root = ReactDOM.createRoot(serviceContainer);
   root.render(<ServiceComponent response={{ ...response, dataOfUser }} />);
 };
