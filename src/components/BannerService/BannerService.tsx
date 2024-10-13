@@ -26,7 +26,6 @@ const BannerService = ({ response }: any) => {
     content,
     dismissButton,
     showSender,
-    token,
     _id: bannerId,
   } = response;
   if (settings?.bannerStyle !== 'floating') addBodyStyles(settings?.bannerPosition);
@@ -53,9 +52,9 @@ const BannerService = ({ response }: any) => {
         name: dataOfUser?.name,
         code: emoji,
         participatorId: dataOfUser?.memberId,
+        message_id: bannerId,
       },
-      `/banners/${bannerId}/reacts`,
-      token
+      `/client-api/banners/reaction`,
     ).then(() => closeBanner(dataOfUser));
   };
   const bannerUrlHandler = ({
@@ -78,9 +77,9 @@ const BannerService = ({ response }: any) => {
         name: dataOfUser?.name,
         code: 'x-close',
         participatorId: dataOfUser?.memberId,
+        message_id: bannerId,
       },
-      `/banners/${bannerId}/reacts`,
-      token
+      `/client-api/banners/reaction`,
     ).then(() => closeBanner(dataOfUser));
   };
   return (

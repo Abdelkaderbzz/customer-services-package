@@ -14,34 +14,68 @@ import useUrl from '../hooks/useUrl';
 import { requestPermission } from '../firebase/permission';
 import { onMessageListener } from '../firebase/message';
 import {
+  clearBannerStore,
+  clearPopupsStore,
   fetchFirstBanner,
   fetchFirstPopup,
   fetchPopupsUsingUrl,
+  putBannerInCorrectPlace,
+  putPopupInCorrectPlace,
   saveBannersInIndexedDb,
   savePopupInIndexedDb,
 } from '../cache/indexedDB';
 import { renderService } from '../hooks/renderService';
+import { getUserNotifications, getVersion } from '../api/getUserNotifications';
 
-export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
+
+export const TakiPopups = ({
+  name,
+  appId,
+  memberId,
+  meta_data,
+}: ITakiPopupsProps) => {
   useGoogleFonts();
   const dataOfUser = {
     name: name || getGuestName(),
     memberId: memberId || getGuestId(),
-    // domaineName: window.location.hostname,
-    domaineName: 'listninja.netlify.app',
+    appId,
     ...meta_data,
   };
-  window.localStorage.setItem('popupPriority', '0');
-  window.localStorage.setItem('bannerPriority', '0');
+  const dataOfUserV2 = {
+    name: name || getGuestName(),
+    memberId: memberId || getGuestId(),
+    appId,
+    meta_data,
+  };
 
-  savePopupInIndexedDb();
-  saveBannersInIndexedDb();
-  // fetchFirstPopup().then((res) => {
-  //   renderService({ response: res, serviceType: 'popup', dataOfUser });
-  // });
-  fetchFirstBanner().then((res) => {
-    renderService({ response: res, serviceType: 'banner', dataOfUser });
-  });
+  async function handleNotifications() {
+    const res = await getVersion(appId);
+    let currentVersion = window.localStorage.getItem('app_version') || 'empty';
+    if (currentVersion !== res.version.toString()) {
+      window.localStorage.setItem('app_version', res.version);
+
+      const notificationRes = await getUserNotifications(dataOfUserV2);
+      if (notificationRes?.message) {
+        await clearPopupsStore();
+        await clearBannerStore();
+        const { banner, popup } = notificationRes;
+        if (popup) {
+          savePopupInIndexedDb(popup);
+        }
+        if (banner) {
+          saveBannersInIndexedDb(banner);
+        }
+      }
+    }
+
+    const popupRes = await fetchFirstPopup();
+    renderService({ response: popupRes, serviceType: 'popup', dataOfUser });
+
+    const bannerRes = await fetchFirstBanner();
+    renderService({ response: bannerRes, serviceType: 'banner', dataOfUser });
+  }
+
+  handleNotifications();
 
   onMessageListener();
   // useEffect(() => {
@@ -55,21 +89,23 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
   requestPermission({
     name,
     devices: 'web',
-    domaineName: window.location.hostname,
+    appId,
     memberId,
     metaData: meta_data,
   });
   useEffect(() => {
-    initiateSocket();
-    emitEvent('hey-server-web', dataOfUser);
-    subscribeToEvent<string>('receive-popup-mobile', (response: any) => {
-      const popupPriority = window.localStorage.getItem('popupPriority');
-      const incomingPopupPriority = response?.priority;
-      if (Number(incomingPopupPriority) >= Number(popupPriority)) {
-        window.localStorage.setItem('currentPopupId', response?.id);
-        window.localStorage.setItem('popupPriority', incomingPopupPriority);
-        renderService({ response, serviceType: 'popup', dataOfUser });
-      }
+    initiateSocket({ memberId: String(dataOfUser.memberId) });
+    subscribeToEvent<string>('receive-popup-mobile', async (response: any) => {
+      await fetchFirstPopup().then((res) => {
+        if (!res || response.priority >= res.priority) {
+          renderService({
+            response: response,
+            serviceType: 'popup',
+            dataOfUser,
+          });
+        }
+      });
+      await putPopupInCorrectPlace(response);
     });
     subscribeToEvent<string>('cancel-this-popup', ({ canceledIds }: any) => {
       const currentPopupId = window.localStorage.getItem('currentPopupId');
@@ -77,14 +113,19 @@ export const TakiPopups = ({ name, memberId, meta_data }: ITakiPopupsProps) => {
         closePopup(dataOfUser);
       }
     });
-
-    subscribeToEvent<string>('receive-banner-web', (response: any) => {
-      const bannerPriority = window.localStorage.getItem('bannerPriority');
-      const incomingBannerPriority = response?.settings?.priority;
-      if (Number(incomingBannerPriority) >= Number(bannerPriority)) {
-        window.localStorage.setItem('bannerPriority', incomingBannerPriority);
-        renderService({ response, serviceType: 'banner', dataOfUser });
-      }
+    subscribeToEvent<string>('receive-banner-web', async (response: any) =>
+    {
+      console.log(response)
+      await fetchFirstBanner().then((res) => {
+        if (!res || response.priority >= res.priority) {
+          renderService({
+            response: response,
+            serviceType: 'banner',
+            dataOfUser,
+          });
+        }
+      });
+      await putBannerInCorrectPlace(response);
     });
     return () => {
       disconnectSocket();

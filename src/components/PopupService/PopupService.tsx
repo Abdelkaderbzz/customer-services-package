@@ -6,7 +6,7 @@ import { postComment, postReact } from '../../api/interaction';
 import { getElementByClass, getManyElementByClass } from '../../utils/getElement';
 
 const PopupService = ({
-  response: { id, priority, content, token, dataOfUser },
+  response: { id, content, dataOfUser },
 }: any) => {
   const getTranslation = (key: any) => {
     const language = localStorage.getItem('i18nextLng') || 'en';
@@ -15,7 +15,6 @@ const PopupService = ({
   useEffect(() =>
   {
     const overLay = getElementByClass('overlay-popups');
-    console.log(overLay)
     const normalClose = getElementByClass('close-btn');
     overLay?.addEventListener('click', () => {
       closePopupWithoutHeyServer();
@@ -53,9 +52,9 @@ const PopupService = ({
           name: dataOfUser?.name,
           code: 'x-close',
           participatorId: dataOfUser?.memberId,
+          message_id: id,
         },
-        `/popups/${id}/reacts`,
-        token
+        `/client-api/messages/reaction`,
       ).then(() => closePopup(dataOfUser));
     });
     const form = getElementByClass('popup-comment-form');
@@ -64,15 +63,14 @@ const PopupService = ({
       const commentValue = getElementByClass('comment-input')?.value;
 
       if (commentValue) {
-        window.localStorage.setItem('popupPriority', '0');
         await postComment(
           {
             name: dataOfUser?.name,
             body: commentValue,
             participatorId: dataOfUser?.memberId,
+            message_id:id
           },
-          `/popups/${id}/comments`,
-          token
+          `/client-api/messages/comment`,
         ).then(() => closePopup(dataOfUser));
       }
     });
@@ -80,15 +78,14 @@ const PopupService = ({
     emojiButtons.forEach((emojiButton) => {
       emojiButton?.addEventListener('click', async () => {
         const name = emojiButton.textContent;
-        window.localStorage.setItem('popupPriority', '0');
         await postReact(
           {
             name: dataOfUser?.name,
             code: name,
             participatorId: dataOfUser?.memberId,
+            message_id: id,
           },
-          `/popups/${id}/reacts`,
-          token
+          `/client-api/messages/reaction`,
         ).then(() => closePopup(dataOfUser));
         // socket.emit("hey-server-web", { dataOfUser, href: window.location.href });
       });
