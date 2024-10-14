@@ -7,7 +7,10 @@ import {
   subscribeToEvent,
 } from '../utils/socket';
 import { ITakiPopupsProps } from './TakiPopups.types';
-import { closeBanner, closeBannerWithoutHeyServer, closePopup, closePopupWithoutHeyServer } from '../utils/closePopup';
+import {
+  closeBannerWithoutHeyServer,
+  closePopupWithoutHeyServer,
+} from '../utils/closePopup';
 import { requestPermission } from '../firebase/permission';
 import { onMessageListener } from '../firebase/message';
 import {
@@ -71,7 +74,6 @@ export const TakiPopups = ({
 
   handleNotifications();
 
-  onMessageListener();
   // useEffect(() => {
   //   const currentPath = window.location.pathname;
   //   fetchPopupsUsingUrl(currentPath).then((res) => {
@@ -80,6 +82,7 @@ export const TakiPopups = ({
   //     }
   //   });
   // }, [window.location.href]);
+  onMessageListener();
   requestPermission({
     name,
     devices: 'web',
@@ -115,9 +118,8 @@ export const TakiPopups = ({
     subscribeToEvent<string>(
       'cancel-this-banner',
       async ({ canceledIds }: any) => {
-        await fetchFirstBanner().then((response) =>
-        {
-          console.log(response.id)
+        await fetchFirstBanner().then((response) => {
+          console.log(response.id);
           if (canceledIds?.includes(response?.id)) {
             closeBannerWithoutHeyServer();
           }
