@@ -8,17 +8,13 @@ import {
 import { renderService } from '../hooks/renderService';
 import { removeBodyStyles } from './addStyle';
 import { getElementByClass } from './getElement';
-import { emitEvent } from './socket';
 
-export const closePopup = (dataOfUser: any) => {
-  closePopupWithoutHeyServer();
-  window.localStorage.setItem('popupPriority', '0');
-  //dataOfUser['href'] = window.location.href;
-  // emitEvent('hey-server-web', dataOfUser);
+export const closePopup = async (userBaseInfo: any) => {
+  await closePopupWithoutHeyServer();
   deleteFirstPopup().then(() => {
     fetchFirstPopup().then((res) => {
       if (res) {
-        renderService({ response: res, serviceType: 'popup', dataOfUser });
+        renderService({ response: res, serviceType: 'popup', userBaseInfo });
       }
     });
   });
@@ -27,15 +23,13 @@ export const closePopupWithoutHeyServer = () => {
   getElementByClass('popup-taki')?.remove();
   getElementByClass('overlay-popups')?.remove();
 };
-export const closeBanner = (dataOfUser: any) => {
-  // emitEvent('hey-server-web', dataOfUser);
-  closeBannerWithoutHeyServer();
+export const closeBanner = async(userBaseInfo: any) => {
+  await closeBannerWithoutHeyServer();
   removeBodyStyles();
-  window.localStorage.setItem('bannerPriority', '0');
   deleteFirstBanner().then(() => {
     fetchFirstBanner().then((res) => {
       if (res) {
-        renderService({ response: res, serviceType: 'banner', dataOfUser });
+        renderService({ response: res, serviceType: 'banner', userBaseInfo });
       }
     });
   });

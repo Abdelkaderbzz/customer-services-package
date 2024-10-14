@@ -18,7 +18,7 @@ import { addBodyStyles } from '../../utils/addStyle';
 
 const BannerService = ({ response }: any) => {
   const {
-    dataOfUser,
+    userBaseInfo,
     settings,
     actions,
     avatar,
@@ -46,16 +46,18 @@ const BannerService = ({ response }: any) => {
     background: settings?.background,
     ...bannerServicePreview,
   };
-  const postBannerReact = (emoji) => {
-    postReact(
+  const postBannerReact = async (emoji) =>
+  {
+    await closeBanner(userBaseInfo);
+    await postReact(
       {
-        name: dataOfUser?.name,
+        name: userBaseInfo?.name,
         code: emoji,
-        participatorId: dataOfUser?.memberId,
+        participatorId: userBaseInfo?.memberId,
         message_id: bannerId,
       },
       `/client-api/banners/reaction`,
-    ).then(() => closeBanner(dataOfUser));
+    )
   };
   const bannerUrlHandler = ({
     url,
@@ -68,19 +70,21 @@ const BannerService = ({ response }: any) => {
       window.location.href = url;
     }
     if (closeBannerOnClick) {
-      closeBanner(dataOfUser);
+      closeBanner(userBaseInfo);
     }
   };
-  const closeBannerHandler = () => {
-    postReact(
+  const closeBannerHandler = async() =>
+  {
+    await closeBanner(userBaseInfo);
+    await postReact(
       {
-        name: dataOfUser?.name,
+        name: userBaseInfo?.name,
         code: 'x-close',
-        participatorId: dataOfUser?.memberId,
+        participatorId: userBaseInfo?.memberId,
         message_id: bannerId,
       },
       `/client-api/banners/reaction`,
-    ).then(() => closeBanner(dataOfUser));
+    )
   };
   return (
     <div style={bannerStyle} className={'banner_service_preview'}>

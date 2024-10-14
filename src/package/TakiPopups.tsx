@@ -1,21 +1,20 @@
-'use client';
 import { useEffect } from 'react';
 import useGoogleFonts from '../hooks/useGoogleFonts';
 import { getGuestId, getGuestName } from '../utils/generateRandomStrings';
 import {
   disconnectSocket,
-  emitEvent,
   initiateSocket,
   subscribeToEvent,
 } from '../utils/socket';
 import { ITakiPopupsProps } from './TakiPopups.types';
-import { closePopup } from '../utils/closePopup';
-import useUrl from '../hooks/useUrl';
+import { closeBanner, closeBannerWithoutHeyServer, closePopup, closePopupWithoutHeyServer } from '../utils/closePopup';
 import { requestPermission } from '../firebase/permission';
 import { onMessageListener } from '../firebase/message';
 import {
   clearBannerStore,
   clearPopupsStore,
+  deleteManyBanners,
+  deleteManyPopup,
   fetchFirstBanner,
   fetchFirstPopup,
   fetchPopupsUsingUrl,
@@ -27,7 +26,6 @@ import {
 import { renderService } from '../hooks/renderService';
 import { getUserNotifications, getVersion } from '../api/getUserNotifications';
 
-
 export const TakiPopups = ({
   name,
   appId,
@@ -35,17 +33,9 @@ export const TakiPopups = ({
   meta_data,
 }: ITakiPopupsProps) => {
   useGoogleFonts();
-  const dataOfUser = {
+  const userBaseInfo = {
     name: name || getGuestName(),
     memberId: memberId || getGuestId(),
-    appId,
-    ...meta_data,
-  };
-  const dataOfUserV2 = {
-    name: name || getGuestName(),
-    memberId: memberId || getGuestId(),
-    appId,
-    meta_data,
   };
 
   async function handleNotifications() {
@@ -53,8 +43,12 @@ export const TakiPopups = ({
     let currentVersion = window.localStorage.getItem('app_version') || 'empty';
     if (currentVersion !== res.version.toString()) {
       window.localStorage.setItem('app_version', res.version);
-
-      const notificationRes = await getUserNotifications(dataOfUserV2);
+      const userInfo = {
+        ...userBaseInfo,
+        appId,
+        meta_data,
+      };
+      const notificationRes = await getUserNotifications(userInfo);
       if (notificationRes?.message) {
         await clearPopupsStore();
         await clearBannerStore();
@@ -69,10 +63,10 @@ export const TakiPopups = ({
     }
 
     const popupRes = await fetchFirstPopup();
-    renderService({ response: popupRes, serviceType: 'popup', dataOfUser });
+    renderService({ response: popupRes, serviceType: 'popup', userBaseInfo });
 
     const bannerRes = await fetchFirstBanner();
-    renderService({ response: bannerRes, serviceType: 'banner', dataOfUser });
+    renderService({ response: bannerRes, serviceType: 'banner', userBaseInfo });
   }
 
   handleNotifications();
@@ -94,34 +88,50 @@ export const TakiPopups = ({
     metaData: meta_data,
   });
   useEffect(() => {
-    initiateSocket({ memberId: String(dataOfUser.memberId) });
+    initiateSocket({ memberId: String(userBaseInfo.memberId) });
     subscribeToEvent<string>('receive-popup-mobile', async (response: any) => {
       await fetchFirstPopup().then((res) => {
         if (!res || response.priority >= res.priority) {
           renderService({
             response: response,
             serviceType: 'popup',
-            dataOfUser,
+            userBaseInfo,
           });
         }
       });
       await putPopupInCorrectPlace(response);
     });
-    subscribeToEvent<string>('cancel-this-popup', ({ canceledIds }: any) => {
-      const currentPopupId = window.localStorage.getItem('currentPopupId');
-      if (canceledIds?.includes(currentPopupId)) {
-        closePopup(dataOfUser);
+    subscribeToEvent<string>(
+      'cancel-this-popup',
+      async ({ canceledIds }: any) => {
+        await fetchFirstPopup().then((response) => {
+          if (canceledIds?.includes(response?.id)) {
+            closePopupWithoutHeyServer();
+          }
+        });
+        await deleteManyPopup(canceledIds);
       }
-    });
-    subscribeToEvent<string>('receive-banner-web', async (response: any) =>
-    {
-      console.log(response)
+    );
+    subscribeToEvent<string>(
+      'cancel-this-banner',
+      async ({ canceledIds }: any) => {
+        await fetchFirstBanner().then((response) =>
+        {
+          console.log(response.id)
+          if (canceledIds?.includes(response?.id)) {
+            closeBannerWithoutHeyServer();
+          }
+        });
+        await deleteManyBanners(canceledIds);
+      }
+    );
+    subscribeToEvent<string>('receive-banner-web', async (response: any) => {
       await fetchFirstBanner().then((res) => {
-        if (!res || response.priority >= res.priority) {
+        if (!res || response.settings.priority >= res.settings.priority) {
           renderService({
             response: response,
             serviceType: 'banner',
-            dataOfUser,
+            userBaseInfo,
           });
         }
       });

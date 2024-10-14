@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom/client';
 import PopupService from '../components/PopupService/PopupService';
 import BannerService from '../components/BannerService/BannerService';
 
-export const renderService = ({ response, serviceType, dataOfUser }: any) => {
+export const renderService = ({ response, serviceType, userBaseInfo }: any) => {
   const serviceComponents: { [key: string]: React.FC<any> } = {
     popup: PopupService,
     banner: BannerService,
@@ -25,16 +25,15 @@ export const renderService = ({ response, serviceType, dataOfUser }: any) => {
     shadowRoot = shadowHost.attachShadow({ mode: 'open' });
   }
 
-  // Create a unique container for each service type
   let serviceContainer = shadowRoot.getElementById(
     `shadow-container-${serviceType}`
   );
   if (!serviceContainer) {
     serviceContainer = document.createElement('div');
-    serviceContainer.id = `shadow-container-${serviceType}`; // Unique ID per service type
+    serviceContainer.id = `shadow-container-${serviceType}`; 
     shadowRoot.appendChild(serviceContainer);
   }
 
   const root = ReactDOM.createRoot(serviceContainer);
-  root.render(<ServiceComponent response={{ ...response, dataOfUser }} />);
+  root.render(<ServiceComponent response={{ ...response, userBaseInfo }} />);
 };

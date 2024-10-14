@@ -8,7 +8,7 @@ class TodoDatabase extends Dexie {
     super('taki-popups-db');
     this.version(1).stores({
       popups: '++id,priority,id,url',
-      banners: '++id,priority,id',
+      banners: '++id,settings.priority,_id',
     });
   }
 }
@@ -96,7 +96,7 @@ export const fetchFirstPopup = async () => {
 export const fetchFirstBanner = async () => {
   try {
     const banners = await db.banners.toArray();
-    return banners.length ? banners[banners.length - 1] : null;
+    return banners.length ? banners[0] : null;
   } catch (error) {
     console.error('Failed to fetch the last banner:', error);
     return null;
@@ -116,11 +116,31 @@ export const deleteFirstPopup = async () => {
     console.error('Failed to delete the first popup:', error);
   }
 };
+export const deleteManyPopup = async (popupIds:string[]) => {
+  try {
+    popupIds?.map(async (id: string) => {
+      await db.popups.delete(id);
+    });
+    console.log(`Popup with ids ${popupIds.join(',')} deleted successfully.`);
+  } catch (error) {
+    console.error('Failed to delete the popups:', error);
+  }
+};
+export const deleteManyBanners = async (bannersIds:string[]) => {
+  try {
+    bannersIds?.map(async (id: string) => {
+      await db.banners.delete(id);
+    });
+    console.log(`Banner with ids ${bannersIds.join(',')} deleted successfully.`);
+  } catch (error) {
+    console.error('Failed to delete the banners:', error);
+  }
+};
 export const deleteFirstBanner = async () => {
   try {
     const firstBanner = await fetchFirstBanner();
     if (firstBanner) {
-      const id = firstBanner.id;
+      const id = firstBanner._id;
       await db.banners.delete(id);
       console.log(`Banner with id ${id} deleted successfully.`);
     } else {
@@ -158,7 +178,7 @@ export const putBannerInCorrectPlace = async (newBanner: any) => {
 
     let inserted = false;
     for (let i = 0; i < existingBanners.length; i++) {
-      if (newBanner.priority >= existingBanners[i].priority) {
+      if (newBanner.settings.priority >= existingBanners[i].settings.priority) {
         await db.banners.add(newBanner);
         inserted = true;
         break;

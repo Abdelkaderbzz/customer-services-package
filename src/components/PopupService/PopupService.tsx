@@ -3,17 +3,23 @@ import { useEffect } from 'react';
 import { closePopup, closePopupWithoutHeyServer } from '../../utils/closePopup';
 import { translations } from '../../utils/translation';
 import { postComment, postReact } from '../../api/interaction';
-import { getElementByClass, getManyElementByClass } from '../../utils/getElement';
+import {
+  getElementByClass,
+  getManyElementByClass,
+} from '../../utils/getElement';
 
 const PopupService = ({
-  response: { id, content, dataOfUser },
+  response: {
+    id,
+    content,
+    userBaseInfo: { memberId, name },
+  },
 }: any) => {
   const getTranslation = (key: any) => {
     const language = localStorage.getItem('i18nextLng') || 'en';
     return translations[language]?.[key] || translations['en'][key];
   };
-  useEffect(() =>
-  {
+  useEffect(() => {
     const overLay = getElementByClass('overlay-popups');
     const normalClose = getElementByClass('close-btn');
     overLay?.addEventListener('click', () => {
@@ -46,16 +52,17 @@ const PopupService = ({
     }
     dontShowAgainButton?.addEventListener('click', async () => {
       dontShowAgainButton.disabled = true;
-      window.localStorage.setItem('', '0');
-      await postReact(
-        {
-          name: dataOfUser?.name,
-          code: 'x-close',
-          participatorId: dataOfUser?.memberId,
-          message_id: id,
-        },
-        `/client-api/messages/reaction`,
-      ).then(() => closePopup(dataOfUser));
+      closePopup({ name, memberId }).then(() => {
+        postReact(
+          {
+            name,
+            code: 'x-close',
+            participatorId: memberId,
+            message_id: id,
+          },
+          `/client-api/messages/reaction`
+        );
+      });
     });
     const form = getElementByClass('popup-comment-form');
     form?.addEventListener('submit', async (event) => {
@@ -63,31 +70,33 @@ const PopupService = ({
       const commentValue = getElementByClass('comment-input')?.value;
 
       if (commentValue) {
-        await postComment(
-          {
-            name: dataOfUser?.name,
-            body: commentValue,
-            participatorId: dataOfUser?.memberId,
-            message_id:id
-          },
-          `/client-api/messages/comment`,
-        ).then(() => closePopup(dataOfUser));
+        closePopup({ name, memberId }).then(() =>
+          postComment(
+            {
+              name,
+              body: commentValue,
+              participatorId: memberId,
+              message_id: id,
+            },
+            `/client-api/messages/comment`
+          )
+        );
       }
     });
     const emojiButtons = getManyElementByClass('emoji-btn');
     emojiButtons.forEach((emojiButton) => {
       emojiButton?.addEventListener('click', async () => {
-        const name = emojiButton.textContent;
+        const emojiIcon = emojiButton.textContent;
+        await closePopup({ name, memberId });
         await postReact(
           {
-            name: dataOfUser?.name,
-            code: name,
-            participatorId: dataOfUser?.memberId,
+            name,
+            code: emojiIcon,
+            participatorId: memberId,
             message_id: id,
           },
-          `/client-api/messages/reaction`,
-        ).then(() => closePopup(dataOfUser));
-        // socket.emit("hey-server-web", { dataOfUser, href: window.location.href });
+          `/client-api/messages/reaction`
+        );
       });
     });
     const swiperWrapper = getElementByClass('swiper-wrapper');
