@@ -135,15 +135,13 @@ export const deleteManyBanners = async (bannersIds: string[]) => {
     console.error('Failed to delete the banners:', error);
   }
 };
-export const deleteFirstBanner = async () => {
+export const deleteByBannerId = async (id: string | null | undefined) => {
   try {
-    const firstBanner = await fetchFirstBanner();
-    if (firstBanner) {
-      const id = firstBanner.banner_id;
-      await db.banners.delete(id);
-    } else {
-      console.log('No banners found to delete.');
+    if (id) {
+      await db.banners.where('banner_id').equals(id).delete();
     }
+
+    console.log('No banners found to delete.');
   } catch (error) {
     console.error('Failed to delete the first banner:', error);
   }
@@ -184,7 +182,6 @@ export const putBannerInCorrectPlace = async (newBanner: any) => {
     if (!inserted) {
       await db.banners.add(newBanner);
     }
-
   } catch (error) {
     console.error('Error adding banner:', error);
   }

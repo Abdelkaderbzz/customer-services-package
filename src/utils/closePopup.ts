@@ -1,5 +1,5 @@
 import {
-  deleteFirstBanner,
+  deleteByBannerId,
   deleteFirstPopup,
   deletePopupFromIndexedDb,
   fetchFirstBanner,
@@ -24,21 +24,26 @@ export const closePopupWithoutHeyServer = () => {
   getElementByClass('overlay-popups')?.remove();
 };
 
-export const closeBanner = async(userBaseInfo: any) => {
+export const closeBanner = async (userBaseInfo: any) => {
+  const displayedBannerId = getElementByClass(
+    'banner_service_preview'
+  )?.getAttribute('banner-id');
+  await deleteByBannerId(displayedBannerId);
   await closeBannerWithoutHeyServer();
   removeBodyStyles();
-  deleteFirstBanner().then(() => {
-    fetchFirstBanner().then((res) => {
-      if (res) {
-        renderService({ response: res, serviceType: 'banner', userBaseInfo });
-      }
-    });
+  fetchFirstBanner().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'banner', userBaseInfo });
+    }
   });
 };
 export const closeBannerWithoutHeyServer = () => {
   getElementByClass('banner_service_preview')?.remove();
 };
-export const cancelBannerTrigger = async(userBaseInfo:{memberId:string,name:string}) => {
+export const cancelBannerTrigger = async (userBaseInfo: {
+  memberId: string;
+  name: string;
+}) => {
   await getElementByClass('banner_service_preview')?.remove();
   removeBodyStyles();
   await fetchFirstBanner().then((res) => {
@@ -47,7 +52,10 @@ export const cancelBannerTrigger = async(userBaseInfo:{memberId:string,name:stri
     }
   });
 };
-export const cancelPopupTrigger = async(userBaseInfo:{memberId:string,name:string}) => {
+export const cancelPopupTrigger = async (userBaseInfo: {
+  memberId: string;
+  name: string;
+}) => {
   await closePopupWithoutHeyServer();
   fetchFirstPopup().then((res) => {
     if (res) {
