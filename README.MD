@@ -29,7 +29,7 @@ import { TakiPopups } from 'taki-popups-service';
 
 
 const name = 'Adem';
-const memberId = '546363546';
+const appId = '546363546';
 const meta_data = {
   age: 18,
   state: 'Manouba',
@@ -39,7 +39,7 @@ const meta_data = {
 function App() {
   return (
     <div>
-      <TakiPopups name={name} memberId={memberId} meta_data={meta_data} />
+      <TakiPopups name={name} appId memberId={memberId} meta_data={meta_data} />
       {/* Other components */}
     </div>
   );
