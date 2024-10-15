@@ -23,6 +23,7 @@ export const closePopupWithoutHeyServer = () => {
   getElementByClass('popup-taki')?.remove();
   getElementByClass('overlay-popups')?.remove();
 };
+
 export const closeBanner = async(userBaseInfo: any) => {
   await closeBannerWithoutHeyServer();
   removeBodyStyles();
@@ -36,4 +37,21 @@ export const closeBanner = async(userBaseInfo: any) => {
 };
 export const closeBannerWithoutHeyServer = () => {
   getElementByClass('banner_service_preview')?.remove();
+};
+export const cancelBannerTrigger = async(userBaseInfo:{memberId:string,name:string}) => {
+  await getElementByClass('banner_service_preview')?.remove();
+  removeBodyStyles();
+  await fetchFirstBanner().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'banner', userBaseInfo });
+    }
+  });
+};
+export const cancelPopupTrigger = async(userBaseInfo:{memberId:string,name:string}) => {
+  await closePopupWithoutHeyServer();
+  fetchFirstPopup().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'popup', userBaseInfo });
+    }
+  });
 };

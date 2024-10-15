@@ -8,6 +8,8 @@ import {
 } from '../utils/socket';
 import { ITakiPopupsProps } from './TakiPopups.types';
 import {
+  cancelBannerTrigger,
+  cancelPopupTrigger,
   closeBannerWithoutHeyServer,
   closePopupWithoutHeyServer,
 } from '../utils/closePopup';
@@ -28,6 +30,7 @@ import {
 } from '../cache/indexedDB';
 import { renderService } from '../hooks/renderService';
 import { getUserNotifications, getVersion } from '../api/getUserNotifications';
+import { getElementByClass } from '../utils/getElement';
 
 export const TakiPopups = ({
   name,
@@ -38,7 +41,7 @@ export const TakiPopups = ({
   useGoogleFonts();
   const userBaseInfo = {
     name: name || getGuestName(),
-    memberId: memberId || getGuestId(),
+    memberId: memberId ? memberId?.toString() : getGuestId(),
   };
 
   async function handleNotifications() {
@@ -107,29 +110,30 @@ export const TakiPopups = ({
     subscribeToEvent<string>(
       'cancel-this-popup',
       async ({ canceledIds }: any) => {
-        await fetchFirstPopup().then((response) => {
-          if (canceledIds?.includes(response?.id)) {
-            closePopupWithoutHeyServer();
-          }
-        });
         await deleteManyPopup(canceledIds);
+        const displayedPopup = getElementByClass(
+          'popup_service_wrapper_container'
+        )?.getAttribute('popup-id');
+        if (canceledIds?.includes(displayedPopup)) {
+          cancelPopupTrigger(userBaseInfo);
+        }
       }
     );
     subscribeToEvent<string>(
       'cancel-this-banner',
       async ({ canceledIds }: any) => {
-        await fetchFirstBanner().then((response) => {
-          console.log(response.id);
-          if (canceledIds?.includes(response?.id)) {
-            closeBannerWithoutHeyServer();
-          }
-        });
         await deleteManyBanners(canceledIds);
+        const displayedBanner = getElementByClass(
+          'banner_service_preview'
+        )?.getAttribute('banner-id');
+        if (canceledIds?.includes(displayedBanner)) {
+          cancelBannerTrigger(userBaseInfo);
+        }
       }
     );
     subscribeToEvent<string>('receive-banner-web', async (response: any) => {
       await fetchFirstBanner().then((res) => {
-        if (!res || response.settings.priority >= res.settings.priority) {
+        if (!res || response?.settings?.priority >= res?.settings?.priority) {
           renderService({
             response: response,
             serviceType: 'banner',

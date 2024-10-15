@@ -33,3 +33,4 @@ export const emitEvent = <T>(eventName: string, data: T): void =>
   if (!socket) return;
   socket.emit(eventName, data);
 };
+

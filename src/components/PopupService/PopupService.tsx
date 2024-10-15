@@ -175,7 +175,7 @@ const PopupService = ({
     prevButton?.addEventListener('click', prevSlide);
     nextButton?.addEventListener('click', nextSlide);
   }, []);
-  return <div dangerouslySetInnerHTML={{ __html: content }} />;
+  return <div className='popup_service_wrapper_container' popup-id={id} dangerouslySetInnerHTML={{ __html: content }} />;
 };
 
 export default PopupService;

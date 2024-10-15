@@ -8,7 +8,7 @@ class TodoDatabase extends Dexie {
     super('taki-popups-db');
     this.version(1).stores({
       popups: '++id,priority,id,url',
-      banners: '++id,settings.priority,_id',
+      banners: '++id,createdAt,banner_id,settings.priority',
     });
   }
 }
@@ -21,7 +21,6 @@ export const savePopupInIndexedDb = (popups: any) => {
 export const clearPopupsStore = async () => {
   try {
     await db.popups.clear();
-    console.log('All entries in the popups object store have been deleted.');
   } catch (error) {
     console.error('Error while clearing popups store:', error);
   }
@@ -29,7 +28,6 @@ export const clearPopupsStore = async () => {
 export const clearBannerStore = async () => {
   try {
     await db.banners.clear();
-    console.log('All entries in the banners object store have been deleted.');
   } catch (error) {
     console.error('Error while clearing banners store:', error);
   }
@@ -71,7 +69,6 @@ export const fetchPopupsWithoutUrlFromIndexedDb = async () => {
 export const deletePopupFromIndexedDb = async (id: number) => {
   try {
     await db.popups.delete(id);
-    console.log(`Popup with id ${id} deleted successfully`);
   } catch (error) {
     console.error(`Failed to delete popup with id ${id}:`, error);
   }
@@ -79,7 +76,6 @@ export const deletePopupFromIndexedDb = async (id: number) => {
 export const deleteBannerFromIndexedDb = async (id: number) => {
   try {
     await db.banners.delete(id);
-    console.log(`Banner with id ${id} deleted successfully`);
   } catch (error) {
     console.error(`Failed to delete banner with id ${id}:`, error);
   }
@@ -95,8 +91,14 @@ export const fetchFirstPopup = async () => {
 };
 export const fetchFirstBanner = async () => {
   try {
-    const banners = await db.banners.toArray();
-    return banners.length ? banners[0] : null;
+    const banners = await db.banners
+      .where('settings.priority')
+      .belowOrEqual(2)
+      .reverse()
+      .toArray();
+    banners.sort((a, b) => b.createdAt - a.createdAt);
+
+    return banners[0];
   } catch (error) {
     console.error('Failed to fetch the last banner:', error);
     return null;
@@ -108,7 +110,6 @@ export const deleteFirstPopup = async () => {
     if (firstPopup) {
       const id = firstPopup.id;
       await db.popups.delete(id);
-      console.log(`Popup with id ${id} deleted successfully.`);
     } else {
       console.log('No popups found to delete.');
     }
@@ -116,22 +117,20 @@ export const deleteFirstPopup = async () => {
     console.error('Failed to delete the first popup:', error);
   }
 };
-export const deleteManyPopup = async (popupIds:string[]) => {
+export const deleteManyPopup = async (popupIds: string[]) => {
   try {
     popupIds?.map(async (id: string) => {
       await db.popups.delete(id);
     });
-    console.log(`Popup with ids ${popupIds.join(',')} deleted successfully.`);
   } catch (error) {
     console.error('Failed to delete the popups:', error);
   }
 };
-export const deleteManyBanners = async (bannersIds:string[]) => {
+export const deleteManyBanners = async (bannersIds: string[]) => {
   try {
     bannersIds?.map(async (id: string) => {
-      await db.banners.delete(id);
+      await db.banners.where('banner_id').equals(id).delete();
     });
-    console.log(`Banner with ids ${bannersIds.join(',')} deleted successfully.`);
   } catch (error) {
     console.error('Failed to delete the banners:', error);
   }
@@ -140,9 +139,8 @@ export const deleteFirstBanner = async () => {
   try {
     const firstBanner = await fetchFirstBanner();
     if (firstBanner) {
-      const id = firstBanner._id;
+      const id = firstBanner.banner_id;
       await db.banners.delete(id);
-      console.log(`Banner with id ${id} deleted successfully.`);
     } else {
       console.log('No banners found to delete.');
     }
@@ -166,8 +164,6 @@ export const putPopupInCorrectPlace = async (newPopup: any) => {
     if (!inserted) {
       await db.popups.add(newPopup);
     }
-
-    console.log('Popup added successfully:', newPopup);
   } catch (error) {
     console.error('Error adding popup:', error);
   }
@@ -189,7 +185,6 @@ export const putBannerInCorrectPlace = async (newBanner: any) => {
       await db.banners.add(newBanner);
     }
 
-    console.log('Banner added successfully:', newBanner);
   } catch (error) {
     console.error('Error adding banner:', error);
   }

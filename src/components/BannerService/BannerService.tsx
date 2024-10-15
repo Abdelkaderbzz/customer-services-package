@@ -26,7 +26,7 @@ const BannerService = ({ response }: any) => {
     content,
     dismissButton,
     showSender,
-    _id: bannerId,
+    banner_id: bannerId,
   } = response;
   if (settings?.bannerStyle !== 'floating') addBodyStyles(settings?.bannerPosition);
   const baseUrl = import.meta.env.VITE_APP_BASE_URL;
@@ -54,10 +54,10 @@ const BannerService = ({ response }: any) => {
         name: userBaseInfo?.name,
         code: emoji,
         participatorId: userBaseInfo?.memberId,
-        message_id: bannerId,
+        message_id: bannerId
       },
-      `/client-api/banners/reaction`,
-    )
+      `/client-api/banners/reaction`
+    );
   };
   const bannerUrlHandler = ({
     url,
@@ -81,13 +81,13 @@ const BannerService = ({ response }: any) => {
         name: userBaseInfo?.name,
         code: 'x-close',
         participatorId: userBaseInfo?.memberId,
-        message_id: bannerId,
+        message_id: bannerId
       },
-      `/client-api/banners/reaction`,
-    )
+      `/client-api/banners/reaction`
+    );
   };
   return (
-    <div style={bannerStyle} className={'banner_service_preview'}>
+    <div style={bannerStyle} banner-id={bannerId} className={'banner_service_preview'}>
       <div style={bannerServicePreviewItems}>
         {showSender && (
           <img
@@ -113,7 +113,7 @@ const BannerService = ({ response }: any) => {
             )}
           </div>
         )}
-        {actions.actionType === 'url' && (
+        {actions?.actionType === 'url' && (
           <p
             onClick={() => bannerUrlHandler(actions?.properties?.url)}
             style={urlAction}
