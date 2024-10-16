@@ -7,29 +7,17 @@ import {
   subscribeToEvent,
 } from '../utils/socket';
 import { ITakiPopupsProps } from './TakiPopups.types';
-import {
-  cancelBannerTrigger,
-  cancelPopupTrigger,
-} from '../utils/closePopup';
+import { cancelBannerTrigger, cancelPopupTrigger } from '../utils/closePopup';
 import { onMessageListener } from '../firebase/message';
-import {
-  clearBannerStore,
-  clearPopupsStore,
-  deleteManyBanners,
-  deleteManyPopup,
-  fetchFirstBanner,
-  fetchFirstPopup,
-  fetchPopupsUsingUrl,
-  putBannerInCorrectPlace,
-  putPopupInCorrectPlace,
-  saveBannersInIndexedDb,
-  savePopupInIndexedDb,
-} from '../cache/indexedDB';
+import * as IN_DB from '../cache/indexedDB';
 import { renderService } from '../hooks/renderService';
 import { getUserNotifications, getVersion } from '../api/getUserNotifications';
-import { getElementByClass } from '../utils/getElement';
 import { DeepEqualObject } from '../utils/deepEqual';
 import { checkAndRequestPermission } from '../firebase/checkAndRequestPermission';
+import {
+  getIdOfDisplayedBanner,
+  getIdOfDisplayedPopup,
+} from '../utils/getCurrentServices';
 
 export const TakiPopups = ({
   name,
@@ -43,6 +31,44 @@ export const TakiPopups = ({
     memberId: memberId ? memberId?.toString() : getGuestId(),
   };
 
+  const handlePopup = async (response: any) => {
+    const existingPopup = await IN_DB.fetchFirstPopup();
+    if (!existingPopup || response.priority >= existingPopup.priority) {
+      renderService({ response, serviceType: 'popup', userBaseInfo });
+    }
+    await IN_DB.putPopupInCorrectPlace(response);
+  };
+
+  const handleBanner = async (response: any) => {
+    const existingBanner = await IN_DB.fetchFirstBanner();
+    if (
+      !existingBanner ||
+      response?.settings?.priority >= existingBanner?.settings?.priority
+    ) {
+      renderService({ response, serviceType: 'banner', userBaseInfo });
+    }
+    await IN_DB.addBannerToIndexedDb(response);
+  };
+
+  const handleCancelPopup = async ({
+    canceledIds,
+  }: any) => {
+    await IN_DB.deleteManyPopup(canceledIds);
+    const displayedPopupId  = getIdOfDisplayedPopup();
+    if (canceledIds?.includes(displayedPopupId)) {
+      cancelPopupTrigger(userBaseInfo);
+    }
+  };
+
+  const handleCancelBanner = async ({
+    canceledIds,
+  }: any) => {
+    await IN_DB.deleteManyBanners(canceledIds);
+    const displayedBannerId = getIdOfDisplayedBanner();
+    if (canceledIds?.includes(displayedBannerId)) {
+      cancelBannerTrigger(userBaseInfo);
+    }
+  };
   async function handleNotifications() {
     const res = await getVersion(appId);
     let currentVersion = window.localStorage.getItem('app_version') || 'empty';
@@ -55,35 +81,32 @@ export const TakiPopups = ({
       };
       const notificationRes = await getUserNotifications(userInfo);
       if (notificationRes?.message) {
-        await clearPopupsStore();
-        await clearBannerStore();
+        await IN_DB.clearPopupsStore();
+        await IN_DB.clearBannerStore();
         const { banner, popup } = notificationRes;
         if (popup) {
-          savePopupInIndexedDb(popup);
+          IN_DB.savePopupInIndexedDb(popup);
         }
         if (banner) {
-          saveBannersInIndexedDb(banner);
+          IN_DB.saveBannersInIndexedDb(banner);
         }
       }
     }
 
-    const popupRes = await fetchFirstPopup();
-    renderService({ response: popupRes, serviceType: 'popup', userBaseInfo });
-
-    const bannerRes = await fetchFirstBanner();
-    renderService({ response: bannerRes, serviceType: 'banner', userBaseInfo });
+    const popupRes = await IN_DB.fetchFirstPopup();
+    if (popupRes) {
+      renderService({ response: popupRes, serviceType: 'popup', userBaseInfo });
+    }
+    const bannerRes = await IN_DB.fetchFirstBanner();
+    if (bannerRes) {
+      renderService({
+        response: bannerRes,
+        serviceType: 'banner',
+        userBaseInfo,
+      });
+    }
   }
 
-  handleNotifications();
-
-  // useEffect(() => {
-  //   const currentPath = window.location.pathname;
-  //   fetchPopupsUsingUrl(currentPath).then((res) => {
-  //     if (res.length > 0) {
-  //       renderService({ response: res[0], serviceType: 'popup', dataOfUser });
-  //     }
-  //   });
-  // }, [window.location.href]);
   onMessageListener();
   useEffect(() => {
     const currentUser = {
@@ -93,56 +116,13 @@ export const TakiPopups = ({
       memberId,
       metaData: meta_data,
     } as DeepEqualObject;
+    handleNotifications();
     checkAndRequestPermission(currentUser);
     initiateSocket({ memberId: String(userBaseInfo.memberId) });
-    subscribeToEvent<string>('receive-popup-mobile', async (response: any) => {
-      await fetchFirstPopup().then((res) => {
-        if (!res || response.priority >= res.priority) {
-          renderService({
-            response: response,
-            serviceType: 'popup',
-            userBaseInfo,
-          });
-        }
-      });
-      await putPopupInCorrectPlace(response);
-    });
-    subscribeToEvent<string>(
-      'cancel-this-popup',
-      async ({ canceledIds }: any) => {
-        await deleteManyPopup(canceledIds);
-        const displayedPopup = getElementByClass(
-          'popup_service_wrapper_container'
-        )?.getAttribute('popup-id');
-        if (canceledIds?.includes(displayedPopup)) {
-          cancelPopupTrigger(userBaseInfo);
-        }
-      }
-    );
-    subscribeToEvent<string>(
-      'cancel-this-banner',
-      async ({ canceledIds }: any) => {
-        await deleteManyBanners(canceledIds);
-        const displayedBanner = getElementByClass(
-          'banner_service_preview'
-        )?.getAttribute('banner-id');
-        if (canceledIds?.includes(displayedBanner)) {
-          cancelBannerTrigger(userBaseInfo);
-        }
-      }
-    );
-    subscribeToEvent<string>('receive-banner-web', async (response: any) => {
-      await fetchFirstBanner().then((res) => {
-        if (!res || response?.settings?.priority >= res?.settings?.priority) {
-          renderService({
-            response: response,
-            serviceType: 'banner',
-            userBaseInfo,
-          });
-        }
-      });
-      await putBannerInCorrectPlace(response);
-    });
+    subscribeToEvent<string>('receive-popup-mobile', handlePopup);
+    subscribeToEvent<string>('receive-banner-web', handleBanner);
+    subscribeToEvent<string>('cancel-this-popup', handleCancelPopup);
+    subscribeToEvent<string>('cancel-this-banner', handleCancelBanner);
     return () => {
       disconnectSocket();
     };

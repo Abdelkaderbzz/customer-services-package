@@ -1,33 +1,33 @@
 import {
   deleteByBannerId,
-  deleteFirstPopup,
   deletePopupFromIndexedDb,
   fetchFirstBanner,
   fetchFirstPopup,
 } from '../cache/indexedDB';
 import { renderService } from '../hooks/renderService';
 import { removeBodyStyles } from './addStyle';
+import {
+  getIdOfDisplayedBanner,
+  getIdOfDisplayedPopup,
+} from './getCurrentServices';
 import { getElementByClass } from './getElement';
 
 export const closePopup = async (userBaseInfo: any) => {
+  const displayedPopupId = getIdOfDisplayedPopup();
+  await deletePopupFromIndexedDb(displayedPopupId);
   await closePopupWithoutHeyServer();
-  deleteFirstPopup().then(() => {
-    fetchFirstPopup().then((res) => {
-      if (res) {
-        renderService({ response: res, serviceType: 'popup', userBaseInfo });
-      }
-    });
+  fetchFirstPopup().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'popup', userBaseInfo });
+    }
   });
 };
 export const closePopupWithoutHeyServer = () => {
-  getElementByClass('popup-taki')?.remove();
-  getElementByClass('overlay-popups')?.remove();
+  getElementByClass('popup_service_wrapper_container')?.remove();
 };
 
 export const closeBanner = async (userBaseInfo: any) => {
-  const displayedBannerId = getElementByClass(
-    'banner_service_preview'
-  )?.getAttribute('banner-id');
+  const displayedBannerId = getIdOfDisplayedBanner()
   await deleteByBannerId(displayedBannerId);
   await closeBannerWithoutHeyServer();
   removeBodyStyles();
@@ -44,7 +44,7 @@ export const cancelBannerTrigger = async (userBaseInfo: {
   memberId: string;
   name: string;
 }) => {
-  await getElementByClass('banner_service_preview')?.remove();
+  await closePopupWithoutHeyServer();
   removeBodyStyles();
   await fetchFirstBanner().then((res) => {
     if (res) {
