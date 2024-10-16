@@ -10,10 +10,7 @@ import { ITakiPopupsProps } from './TakiPopups.types';
 import {
   cancelBannerTrigger,
   cancelPopupTrigger,
-  closeBannerWithoutHeyServer,
-  closePopupWithoutHeyServer,
 } from '../utils/closePopup';
-import { requestPermission } from '../firebase/permission';
 import { onMessageListener } from '../firebase/message';
 import {
   clearBannerStore,
@@ -31,6 +28,8 @@ import {
 import { renderService } from '../hooks/renderService';
 import { getUserNotifications, getVersion } from '../api/getUserNotifications';
 import { getElementByClass } from '../utils/getElement';
+import { DeepEqualObject } from '../utils/deepEqual';
+import { checkAndRequestPermission } from '../firebase/checkAndRequestPermission';
 
 export const TakiPopups = ({
   name,
@@ -86,14 +85,15 @@ export const TakiPopups = ({
   //   });
   // }, [window.location.href]);
   onMessageListener();
-  requestPermission({
-    name,
-    devices: 'web',
-    appId,
-    memberId,
-    metaData: meta_data,
-  });
   useEffect(() => {
+    const currentUser = {
+      devices: 'web',
+      appId,
+      name,
+      memberId,
+      metaData: meta_data,
+    } as DeepEqualObject;
+    checkAndRequestPermission(currentUser);
     initiateSocket({ memberId: String(userBaseInfo.memberId) });
     subscribeToEvent<string>('receive-popup-mobile', async (response: any) => {
       await fetchFirstPopup().then((res) => {
