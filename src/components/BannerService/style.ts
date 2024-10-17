@@ -17,7 +17,6 @@ export const bannerServicePreview = {
 export const floatingBannerStyle = {
   margin: '20px',
   borderRadius: '12px',
-  boxShadow: '0 4px 16px #0071b252',
 };
 export const bannerServicePreviewItems = {
   width: '100%',

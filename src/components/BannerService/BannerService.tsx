@@ -38,7 +38,9 @@ const BannerService = ({ response }: any) => {
       ? { width: 'calc(100% - 40px)' }
       : { width: '100%' }),
     ...(settings?.bannerStyle === 'floating'
-      ? {}
+      ? {
+          boxShadow: `0 0.2px 16px ${settings.background}`,
+        }
       : {
           boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
         }),
