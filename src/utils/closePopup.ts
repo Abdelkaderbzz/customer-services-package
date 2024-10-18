@@ -1,23 +1,65 @@
-import { emitEvent } from "./socket";
+import {
+  deleteByBannerId,
+  deletePopupFromIndexedDb,
+  fetchFirstBanner,
+  fetchFirstPopup,
+} from '../cache/indexedDB';
+import { renderService } from '../hooks/renderService';
+import { removeBodyStyles } from './addStyle';
+import {
+  getIdOfDisplayedBanner,
+  getIdOfDisplayedPopup,
+} from './getCurrentServices';
+import { getElementByClass } from './getElement';
 
-export const closePopup = (dataOfUser:any) => {
-  closePopupWithoutHeyServer();
-  window.localStorage.setItem('popupPriority', '0');
-  //dataOfUser['href'] = window.location.href;
-  emitEvent('hey-server-web', dataOfUser);
+export const closePopup = async (userBaseInfo: any) => {
+  const displayedPopupId = getIdOfDisplayedPopup();
+  await deletePopupFromIndexedDb(displayedPopupId);
+  await closePopupWithoutHeyServer();
+  fetchFirstPopup().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'popup', userBaseInfo });
+    }
+  });
 };
 export const closePopupWithoutHeyServer = () => {
-  document.querySelector('.popup-taki')?.remove();
-  document.querySelector('.overlay-popups')?.remove();
+  getElementByClass('popup_service_wrapper_container')?.remove();
 };
-export const closeBanner = (dataOfUser: any) =>
-{
-  emitEvent('hey-server-web', dataOfUser);
-  closeBannerWithoutHeyServer();
-  window.localStorage.setItem('bannerPriority', '0');
-  //dataOfUser['href'] = window.location.href;
-  // socket.emit('hey-server-web', dataOfUser);
+
+export const closeBanner = async (userBaseInfo: any) => {
+  const displayedBannerId = getIdOfDisplayedBanner()
+  await deleteByBannerId(displayedBannerId);
+  await closeBannerWithoutHeyServer();
+  removeBodyStyles();
+  fetchFirstBanner().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'banner', userBaseInfo });
+    }
+  });
 };
 export const closeBannerWithoutHeyServer = () => {
-  document.querySelector('.banner_service_preview')?.remove();
+  getElementByClass('banner_service_preview')?.remove();
+};
+export const cancelBannerTrigger = async (userBaseInfo: {
+  memberId: string;
+  name: string;
+}) => {
+  await closePopupWithoutHeyServer();
+  removeBodyStyles();
+  await fetchFirstBanner().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'banner', userBaseInfo });
+    }
+  });
+};
+export const cancelPopupTrigger = async (userBaseInfo: {
+  memberId: string;
+  name: string;
+}) => {
+  await closePopupWithoutHeyServer();
+  fetchFirstPopup().then((res) => {
+    if (res) {
+      renderService({ response: res, serviceType: 'popup', userBaseInfo });
+    }
+  });
 };

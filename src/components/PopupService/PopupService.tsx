@@ -1,104 +1,111 @@
 // @ts-nocheck
-'use client';
 import { useEffect } from 'react';
 import { closePopup, closePopupWithoutHeyServer } from '../../utils/closePopup';
 import { translations } from '../../utils/translation';
 import { postComment, postReact } from '../../api/interaction';
+import {
+  getElementByClass,
+  getManyElementByClass,
+} from '../../utils/getElement';
 
 const PopupService = ({
-  response: { id, priority, content, token, dataOfUser },
+  response: {
+    id,
+    content,
+    userBaseInfo: { memberId, name },
+  },
 }: any) => {
   const getTranslation = (key: any) => {
     const language = localStorage.getItem('i18nextLng') || 'en';
     return translations[language]?.[key] || translations['en'][key];
   };
   useEffect(() => {
-    const overLay = document.querySelector('.overlay-popups');
-    const normalClose = document.querySelector('.close-btn');
+    const overLay = getElementByClass('overlay-popups');
+    const normalClose = getElementByClass('close-btn');
     overLay?.addEventListener('click', () => {
       closePopupWithoutHeyServer();
     });
     normalClose?.addEventListener('click', () => {
       closePopupWithoutHeyServer();
     });
-    const buttons: any = document.querySelectorAll('.btn-234-custom');
+    const buttons: any = getManyElementByClass('btn-234-custom');
     buttons.forEach(function (button: any) {
       if (button.style.pointerEvents !== undefined) {
         button.style.pointerEvents = 'auto';
       }
     });
 
-    const sendBtn = document.querySelector('.btn-send-comment');
+    const sendBtn = getElementByClass('btn-send-comment');
     const lang = window.localStorage.getItem('i18nextLng');
     if (sendBtn && lang === 'ar') {
       sendBtn.style.rotate = '180deg';
     }
     const dontShowAgainText = getTranslation('dont_show_again');
-    const dontShowAgainButton: any = document.querySelector('.dont-show-again');
+    const dontShowAgainButton: any = getElementByClass('dont-show-again');
     if (dontShowAgainButton) {
       dontShowAgainButton.textContent = dontShowAgainText;
     }
-    const replyInput: any = document.querySelector('.comment-input');
+    const replyInput: any = getElementByClass('comment-input');
     if (replyInput) {
       const replyCommentText = getTranslation('write_a_replay');
       replyInput.placeholder = replyCommentText;
     }
     dontShowAgainButton?.addEventListener('click', async () => {
       dontShowAgainButton.disabled = true;
-      window.localStorage.setItem('', '0');
-      await postReact(
-        {
-          name: dataOfUser?.name,
-          code: 'x-close',
-          participatorId: dataOfUser?.memberId,
-        },
-        `/popups/${id}/reacts`,
-        token
-      ).then(() => closePopup(dataOfUser));
-    });
-    const form = document.querySelector('.popup-comment-form');
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const commentValue = document.querySelector('.comment-input')?.value;
-
-      if (commentValue) {
-        window.localStorage.setItem('popupPriority', '0');
-        await postComment(
+      closePopup({ name, memberId }).then(() => {
+        postReact(
           {
-            name: dataOfUser?.name,
-            body: commentValue,
-            participatorId: dataOfUser?.memberId,
+            name,
+            code: 'x-close',
+            participatorId: memberId,
+            message_id: id,
           },
-          `/popups/${id}/comments`,
-          token
-        ).then(() => closePopup(dataOfUser));
-        // socket.emit("hey-server-web", { dataOfUser, href: window.location.href });
-      }
-    });
-    const emojiButtons = document.querySelectorAll('.emoji-btn');
-    emojiButtons.forEach((emojiButton) => {
-      emojiButton?.addEventListener('click', async () => {
-        const name = emojiButton.textContent;
-        window.localStorage.setItem('popupPriority', '0');
-        await postReact(
-          {
-            name: dataOfUser?.name,
-            code: name,
-            participatorId: dataOfUser?.memberId,
-          },
-          `/popups/${id}/reacts`,
-          token
-        ).then(() => closePopup(dataOfUser));
-        // socket.emit("hey-server-web", { dataOfUser, href: window.location.href });
+          `/client-api/messages/reaction`
+        );
       });
     });
-    const swiperWrapper = document.querySelector('.swiper-wrapper');
-    const prevButton = document.querySelector('.taki-popups-prev-btn');
-    const nextButton = document.querySelector('.taki-popups-next-btn');
-    const popupReply = document.querySelector('.taki-popups-reply');
-    const swiperLength = document.querySelectorAll('.swiper-slide').length;
-    const navigationPoints = document.querySelectorAll(
-      '.taki-popups-navigation-point'
+    const form = getElementByClass('popup-comment-form');
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const commentValue = getElementByClass('comment-input')?.value;
+
+      if (commentValue) {
+        closePopup({ name, memberId }).then(() =>
+          postComment(
+            {
+              name,
+              body: commentValue,
+              participatorId: memberId,
+              message_id: id,
+            },
+            `/client-api/messages/comment`
+          )
+        );
+      }
+    });
+    const emojiButtons = getManyElementByClass('emoji-btn');
+    emojiButtons.forEach((emojiButton) => {
+      emojiButton?.addEventListener('click', async () => {
+        const emojiIcon = emojiButton.textContent;
+        await closePopup({ name, memberId });
+        await postReact(
+          {
+            name,
+            code: emojiIcon,
+            participatorId: memberId,
+            message_id: id,
+          },
+          `/client-api/messages/reaction`
+        );
+      });
+    });
+    const swiperWrapper = getElementByClass('swiper-wrapper');
+    const prevButton = getElementByClass('taki-popups-prev-btn');
+    const nextButton = getElementByClass('taki-popups-next-btn');
+    const popupReply = getElementByClass('taki-popups-reply');
+    const swiperLength = getManyElementByClass('swiper-slide').length;
+    const navigationPoints = getManyElementByClass(
+      'taki-popups-navigation-point'
     );
     let currentIndex = 0;
     if (swiperLength > 1) {
@@ -138,7 +145,7 @@ const PopupService = ({
         popupReply.style.opacity = '0';
         popupReply.style.transition = '0.3s';
       }
-      const slideElement = document.querySelector('.swiper-slide');
+      const slideElement = getElementByClass('swiper-slide');
       if (slideElement !== null && swiperWrapper !== null) {
         const slideWidth = slideElement.offsetWidth;
         swiperWrapper.style.transform = `translateX(-${index * slideWidth}px)`;
@@ -168,7 +175,7 @@ const PopupService = ({
     prevButton?.addEventListener('click', prevSlide);
     nextButton?.addEventListener('click', nextSlide);
   }, []);
-  return <div dangerouslySetInnerHTML={{ __html: content }} />;
+  return <div className='popup_service_wrapper_container' popup-id={id} dangerouslySetInnerHTML={{ __html: content }} />;
 };
 
 export default PopupService;

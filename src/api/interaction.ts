@@ -1,14 +1,13 @@
-const BASE_URL = import.meta.env.VITE_APP_BASE_URL + '/api';
+const BASE_URL = import.meta.env.VITE_APP_BASE_URL;
 const SUBSCRIBE_URL = import.meta.env.VITE_APP_BASE_URL;
 
-export const postComment = async (body:any, endPoint:string, popupToken:string) => {
+export const postComment = async (body:any, endPoint:string) => {
   try {
     const response = await fetch(BASE_URL + endPoint, {
       method: 'POST',
       headers: {
         Accept: '*',
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${popupToken}`,
       },
       body: JSON.stringify(body),
     });
@@ -17,14 +16,13 @@ export const postComment = async (body:any, endPoint:string, popupToken:string) 
     console.error('Error:', error);
   }
 };
-export const postReact = async (body:any, endPoint:string, popupToken:string) => {
+export const postReact = async (body:any, endPoint:string) => {
   try {
     const response = await fetch(BASE_URL + endPoint, {
       method: 'POST',
       headers: {
         Accept: '*',
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${popupToken}`,
       },
       body: JSON.stringify(body),
     });

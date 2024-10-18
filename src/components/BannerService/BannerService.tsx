@@ -14,10 +14,11 @@ import { closeBanner } from '../../utils/closePopup';
 import { postReact } from '../../api/interaction';
 import { getContrastColor } from '../../utils/getContrastColor';
 import { getTextDirection } from '../../utils/checkLanguage';
+import { addBodyStyles } from '../../utils/addStyle';
 
 const BannerService = ({ response }: any) => {
   const {
-    dataOfUser,
+    userBaseInfo,
     settings,
     actions,
     avatar,
@@ -25,10 +26,9 @@ const BannerService = ({ response }: any) => {
     content,
     dismissButton,
     showSender,
-    token,
-    _id: bannerId,
+    banner_id: bannerId,
   } = response;
-
+  if (settings?.bannerStyle !== 'floating') addBodyStyles(settings?.bannerPosition);
   const baseUrl = import.meta.env.VITE_APP_BASE_URL;
   const userAvatar = `${baseUrl}/users/${avatar}`;
   const bannerStyle: any = {
@@ -38,7 +38,9 @@ const BannerService = ({ response }: any) => {
       ? { width: 'calc(100% - 40px)' }
       : { width: '100%' }),
     ...(settings?.bannerStyle === 'floating'
-      ? {}
+      ? {
+          boxShadow: `0 0.2px 16px ${settings.background}`,
+        }
       : {
           boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
         }),
@@ -46,16 +48,18 @@ const BannerService = ({ response }: any) => {
     background: settings?.background,
     ...bannerServicePreview,
   };
-  const postBannerReact = (emoji) => {
-    postReact(
+  const postBannerReact = async (emoji) =>
+  {
+    await closeBanner(userBaseInfo);
+    await postReact(
       {
-        name: dataOfUser?.name,
+        name: userBaseInfo?.name,
         code: emoji,
-        participatorId: dataOfUser?.memberId,
+        participatorId: userBaseInfo?.memberId,
+        message_id: bannerId
       },
-      `/banners/${bannerId}/reacts`,
-      token
-    ).then(() => closeBanner(dataOfUser));
+      `/client-api/banners/reaction`
+    );
   };
   const bannerUrlHandler = ({
     url,
@@ -68,22 +72,24 @@ const BannerService = ({ response }: any) => {
       window.location.href = url;
     }
     if (closeBannerOnClick) {
-      closeBanner(dataOfUser);
+      closeBanner(userBaseInfo);
     }
   };
-  const closeBannerHandler = () => {
-    postReact(
+  const closeBannerHandler = async() =>
+  {
+    await closeBanner(userBaseInfo);
+    await postReact(
       {
-        name: dataOfUser?.name,
+        name: userBaseInfo?.name,
         code: 'x-close',
-        participatorId: dataOfUser?.memberId,
+        participatorId: userBaseInfo?.memberId,
+        message_id: bannerId
       },
-      `/banners/${bannerId}/reacts`,
-      token
-    ).then(() => closeBanner(dataOfUser));
+      `/client-api/banners/reaction`
+    );
   };
   return (
-    <div style={bannerStyle} className={'banner_service_preview'}>
+    <div style={bannerStyle} banner-id={bannerId} className={'banner_service_preview'}>
       <div style={bannerServicePreviewItems}>
         {showSender && (
           <img
@@ -94,7 +100,7 @@ const BannerService = ({ response }: any) => {
           />
         )}
         <div style={bannerServicePreviewContent}>{content}</div>
-        {actions.actionType === 'reactions' && (
+        {actions?.actionType === 'reactions' && (
           <div style={reactionsList}>
             {actions.properties.reactions.reactionsList.map(
               (reaction: string, index: number) => (
@@ -109,7 +115,7 @@ const BannerService = ({ response }: any) => {
             )}
           </div>
         )}
-        {actions.actionType === 'url' && (
+        {actions?.actionType === 'url' && (
           <p
             onClick={() => bannerUrlHandler(actions?.properties?.url)}
             style={urlAction}

@@ -1,38 +1,56 @@
-import { getToken } from "firebase/messaging";
-import axios from "axios";
-import { messaging } from "./firebaseConfig";
+import { getToken } from 'firebase/messaging';
+import axios from 'axios';
+import { messaging } from './firebaseConfig';
+import {
+  dbName,
+  storeName,
+  subscribingUrl,
+  userKey,
+  vapidKey,
+} from '../config/config';
+import { DeepEqualObject } from '../utils/deepEqual';
+import { saveToDB } from '../utils/indexedDB';
 
 
-
-export async function requestPermission(dataOfUser: any){
-  const permission = await Notification.requestPermission();
-  if (permission === "granted") {
-    console.log("VITE_APP_VAPID_KEY", import.meta.env.VITE_APP_VAPID_KEY);
-    try {
-      const token = await getToken(messaging, {
-        vapidKey: import.meta.env.VITE_APP_VAPID_KEY,
-      });
-      if (token) {
-        console.log("Token received: ", token);
-        sendTokenToServer({...dataOfUser,token});
-      } else {
-        console.log("No token received.");
-        alert("Token is not generated yet");
-      }
-    } catch (error) {
-      console.error("Error retrieving token: ", error);
-    }
-  } else if (permission === "denied") {
-    alert("You denied for the notification");
+declare global {
+  interface Window {
+    UserDetails: DeepEqualObject;
   }
 }
 
-export const sendTokenToServer = async (dataOfUser:any) => {
-  console.log('sendTokenToServer', dataOfUser);
+export async function requestPermission(currentUser: DeepEqualObject) {
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    try {
+      const token = await getToken(messaging, {
+        vapidKey: vapidKey,
+      });
+      if (token) {
+        sendTokenToServer(token, currentUser);
+      } else {
+        console.log('No token received.');
+      }
+    } catch (error) {
+      console.log('Error retrieving token: ', error);
+    }
+  } else if (permission === 'denied') {
+    console.log('You denied for the notification');
+  }
+}
+
+export const sendTokenToServer = async (
+  token: string,
+  currentUser: DeepEqualObject
+) => {
+  const newCurrentUser = {
+    ...currentUser,
+    token,
+  };
+
   return await axios
-    .post(import.meta.env.VITE_APP_SUBSCRIBE_URL, dataOfUser)
-    .then((response) => {
-      console.log('Subscribed successfully', response);
+    .post(subscribingUrl, newCurrentUser)
+    .then(async () => {
+      await saveToDB(dbName, storeName, { id: userKey, ...currentUser });
     })
     .catch((error) => {
       console.error('Error subscribing', error);

@@ -50,7 +50,7 @@ export const popupCommentInteraction = createAsyncThunk(
   ) => {
     try {
       const response = await axiosInstance.post(
-        `/api/popups/${popupId}/comments`,
+        `/api/popups/${popupId}/comment`,
         payload
       );
       return response.data;

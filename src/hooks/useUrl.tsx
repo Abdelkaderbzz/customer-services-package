@@ -7,12 +7,11 @@ const useUrl = (dataOfUser: any) => {
     'click',
     () => {
       requestAnimationFrame(() => {
-        if (currentUrl !== window.location.href) {
-          console.log({ ...dataOfUser, url: window.location.href });
-          emitEvent('hey-server-web', {
-            ...dataOfUser,
-            url: window.location.href,
-          });
+        if (currentUrl !== window.location.href) {;
+          // emitEvent('hey-server-web', {
+          //   ...dataOfUser,
+          //   url: window.location.href,
+          // });
           currentUrl = window.location.href;
         }
       });

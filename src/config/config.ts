@@ -1,0 +1,12 @@
+export const dbName = import.meta.env.VITE_APP_DB_NAME;
+export const storeName = import.meta.env.VITE_APP_DB_STORE_NAME;
+export const userKey = import.meta.env.VITE_APP_DB_STORE_USER_KEY;
+export const apiKey = import.meta.env.VITE_APP_API_KEY;
+export const authDomain = import.meta.env.VITE_APP_AUTH_DOMAIN;
+export const projectId = import.meta.env.VITE_APP_PROJECT_ID;
+export const storageBucket = import.meta.env.VITE_APP_STORAGE_BUCKET;
+export const messagingSenderId = import.meta.env.VITE_APP_MESSAGING_SENDER_ID;
+export const appId = import.meta.env.VITE_APP_APP_ID;
+export const measurementId = import.meta.env.VITE_APP_MEASUREMENT_ID;
+export const vapidKey = import.meta.env.VITE_APP_VAPID_KEY;
+export const subscribingUrl = import.meta.env.VITE_APP_SUBSCRIBE_URL;
