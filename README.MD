@@ -1,3 +1,4 @@
+
 # TakiPopups
 
 **TakiPopups** is a powerful, customizable notification tool designed to enhance your website's user engagement and marketing capabilities. With TakiPopups, businesses can deliver tailored notifications to users, driving higher engagement and improving conversion rates. Seamlessly integrate the service into your website by using our npm package and passing user-specific information.
@@ -18,9 +19,9 @@
 
 To get started with **TakiPopups**, install the package via npm:
 
-```bash
+
 npm install taki-popups-service
-# Usage
+## Usage
 
 Once the package is installed, you can integrate **TakiPopups** into your website by importing the module and passing in the required user details as props.
 
@@ -31,6 +32,7 @@ Here’s a simple example of how to implement **TakiPopups** in your React proje
 ### For Logged-In Users
 
 ```jsx
+
 import { TakiPopups } from 'taki-popups-service';
 
 TakiPopups({
@@ -44,7 +46,6 @@ TakiPopups({
     // ... additional meta-data
   }
 });
-
 function App() {
   return (
     <div>
@@ -54,6 +55,7 @@ function App() {
 }
 
 export default App;
+```
 ### For Guest Users
 
 ```jsx
@@ -72,7 +74,7 @@ function App() {
 }
 
 export default App;
-
+```
 ### Props
 
 The **TakiPopups** function accepts the following properties:
