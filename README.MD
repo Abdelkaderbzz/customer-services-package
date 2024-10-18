@@ -1,45 +1,71 @@
 # TakiPopups
 
-**TakiPopups** is a versatile notification tool that allows businesses to send customized notifications to their customers, enhancing marketing efforts and improving user engagement. Easily integrate this service into any website by installing the npm package and passing user information.
+**TakiPopups** is a powerful, customizable notification tool designed to enhance your website's user engagement and marketing capabilities. With TakiPopups, businesses can deliver tailored notifications to users, driving higher engagement and improving conversion rates. Seamlessly integrate the service into your website by using our npm package and passing user-specific information.
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Example](#example)
+  - [Basic Example](#basic-example)
   - [Props](#props)
 - [Customization](#customization)
 - [License](#license)
 - [Support](#support)
 
+---
+
 ## Installation
 
-To install TakiPopups, use npm:
+To get started with **TakiPopups**, install the package via npm:
 
 ```bash
-npm install TakiPopups
+npm install taki-popups-service
+# Usage
 
-Usage
-Once installed, you can integrate TakiPopups into your website by importing the component and passing the required user information as props.
+Once the package is installed, you can integrate **TakiPopups** into your website by importing the module and passing in the required user details as props.
 
-Example
-Here’s how to use the TakiPopups component in your project:
+## Basic Example
 
+Here’s a simple example of how to implement **TakiPopups** in your React project:
+
+### For Logged-In Users
+
+```jsx
 import { TakiPopups } from 'taki-popups-service';
 
-
-const name = 'Adem';
-const appId = '546363546';
-const meta_data = {
-  age: 18,
-  state: 'Manouba',
-  city: 'Manouba',
-};
+TakiPopups({
+  name: 'Adem',
+  memberId: '73924',
+  appId: '546363546',
+  meta_data: {
+    age: 18,
+    state: 'Manouba',
+    phoneNumber: '5289452343',
+    // ... additional meta-data
+  }
+});
 
 function App() {
   return (
     <div>
-      <TakiPopups name={name} appId memberId={memberId} meta_data={meta_data} />
+      {/* Other components */}
+    </div>
+  );
+}
+
+export default App;
+### For Guest Users
+
+```jsx
+import { TakiPopups } from 'taki-popups-service';
+
+TakiPopups({
+  appId: '546363546',
+});
+
+function App() {
+  return (
+    <div>
       {/* Other components */}
     </div>
   );
@@ -47,20 +73,42 @@ function App() {
 
 export default App;
 
-Props
-The TakiPopups component accepts the following props:
+### Props
 
-name: (string, required) - The name of the user.
-memberId: (string, required) - A unique identifier for the user.
-meta_data: (object, required) - An object containing additional user information.
-age: (number) - The age of the user.
-state: (string) - The state where the user resides.
-city: (string) - The city where the user resides.
-Customization
-TakiPopups is designed to be flexible and customizable. You can extend the component with additional props to control the behavior and appearance of the notifications. For a complete list of customization options, refer to the documentation.
+The **TakiPopups** function accepts the following properties:
 
-License
-This project is licensed under the MIT License. See the LICENSE file for details.
+| **Prop**    | **Type** | **Required** | **Description**                                          |
+| ----------- | -------- | ------------ | -------------------------------------------------------- |
+| `name`      | `string` | No           | The name of the user.                                    |
+| `memberId`  | `string` | No           | A unique identifier for the logged-in user.              |
+| `appId`     | `string` | Yes          | The application ID used to identify your business or app. |
+| `meta_data` | `object` | No           | Additional user information such as demographics.         |
 
-Support
-For any questions, issues, or feature requests, please feel free to open an issue on our GitHub repository or contact our support team.
+#### Meta Data Object Structure
+
+The `meta_data` object can contain various user attributes to personalize the notification experience:
+
+- `age` (`number`): User's age.
+- `state` (`string`): The state or region where the user is located.
+- `phoneNumber` (`string`): User's phone number.
+
+
+Feel free to extend `meta_data` with other fields to enhance the notifications sent to your users.
+
+## Customization
+
+**TakiPopups** is designed to be flexible and highly customizable. You can extend the component with additional properties to control the behavior, appearance, and delivery of notifications. Explore the full list of customization options and advanced configuration in the official documentation.
+
+### Example Customizations:
+
+- **Notification styles:** Customize colors, fonts, and positions.
+- **Trigger conditions:** Specify when and how notifications should appear based on user activity.
+- **Content personalization:** Dynamically tailor notification content based on user attributes passed via `meta_data`.
+
+## License
+
+This project is open-source and licensed under the MIT License. Feel free to use, modify, and distribute it according to the terms of the license.
+
+## Support
+
+For questions, issues, or feature requests, please visit our GitHub repository and open an issue. You can also reach out to our support team at [support@takipopups.com](mailto:support@takipopups.com).

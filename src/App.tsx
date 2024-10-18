@@ -1,7 +1,5 @@
 // import { useState } from 'react';
-// import {
-//   fetchPopupsUsingUrl,
-// } from './cache/indexedDB';
+// import { fetchPopupsUsingUrl } from './cache/indexedDB';
 // import { TakiPopups } from './package/TakiPopups';
 
 // function App() {
@@ -14,6 +12,12 @@
 //     city: 'manouba',
 //   };
 //   const [state, setstate] = useState('');
+//   TakiPopups({
+//     appId,
+//     name,
+//     memberId,
+//     meta_data,
+//   });
 //   return (
 //     <div
 //       style={{
@@ -31,12 +35,10 @@
 //           value={state}
 //           onChange={(e) => setstate(e.target.value)}
 //         />
-//         <TakiPopups appId={appId} name={name} memberId={memberId} meta_data={meta_data} />
-//         <br />
-    
+//         {/* <TakiPopups appId={appId} name={name} memberId={memberId} meta_data={meta_data} /> */}
 //         <br />
 //         <br />
-     
+//         <br />
 //         <button onClick={() => fetchPopupsUsingUrl(state)}>
 //           fetch specific url
 //         </button>
