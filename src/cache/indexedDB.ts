@@ -4,8 +4,8 @@ class TodoDatabase extends Dexie {
   popups!: Table<any, any>;
   banners!: Table<any, any>;
 
-  constructor() {
-    super('taki-popups-db');
+  constructor(dbName: string) {
+    super(`taki_popups_${dbName}`);
     this.version(1).stores({
       popups: '++id,priority,id,url',
       banners: '++id,createdAt,banner_id,settings.priority',
@@ -13,7 +13,11 @@ class TodoDatabase extends Dexie {
   }
 }
 
-const db = new TodoDatabase();
+let db: TodoDatabase;
+
+export const initializeDb = (userId: string) => {
+  db = new TodoDatabase(userId);
+};
 
 //! POPUP DB METHODS ----------------------------------------------------------------
 export const savePopupInIndexedDb = (popups: any) => {

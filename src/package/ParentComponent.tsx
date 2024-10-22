@@ -30,7 +30,6 @@ export const ParentComponent = ({
     name: name || getGuestName(),
     memberId: memberId ? memberId?.toString() : getGuestId(),
   };
-
   const handlePopup = async (response: any) => {
     const existingPopup = await IN_DB.fetchFirstPopup();
     if (!existingPopup || response.priority >= existingPopup.priority) {
@@ -67,9 +66,10 @@ export const ParentComponent = ({
   };
   async function handleNotifications() {
     const res = await getVersion(appId);
-    let currentVersion = window.localStorage.getItem('app_version') || 'empty';
+    const appVersion=`app_version_${userBaseInfo.memberId}`
+    let currentVersion = window.localStorage.getItem(appVersion) || 'empty';
     if (currentVersion !== res.version.toString()) {
-      window.localStorage.setItem('app_version', res.version);
+      window.localStorage.setItem(appVersion, res.version);
       const userInfo = {
         ...userBaseInfo,
         appId,
@@ -104,7 +104,9 @@ export const ParentComponent = ({
   }
 
   onMessageListener();
-  useEffect(() => {
+  useEffect(() =>
+  {
+    IN_DB.initializeDb(userBaseInfo.memberId)
     const currentUser = {
       devices: 'web',
       appId,
