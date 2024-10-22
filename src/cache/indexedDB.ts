@@ -7,7 +7,7 @@ class TodoDatabase extends Dexie {
   constructor(dbName: string) {
     super(`taki_popups_${dbName}`);
     this.version(1).stores({
-      popups: '++id,priority,id,url',
+      popups: 'id,createdAt,priority,url',
       banners: '++id,createdAt,banner_id,settings.priority',
     });
   }
@@ -20,6 +20,8 @@ export const initializeDb = (userId: string) => {
 };
 
 //! POPUP DB METHODS ----------------------------------------------------------------
+//? save many popups in indexedDB
+
 export const savePopupInIndexedDb = (popups: any) => {
   popups.map((popup: any) => db.popups.add(popup));
 };
@@ -40,6 +42,7 @@ export const fetchPopupsUsingUrl = async (url: string) => {
     return [];
   }
 };
+//? delete single popup by id 
 
 export const deletePopupFromIndexedDb = async (
   id: string | null | undefined
@@ -51,15 +54,24 @@ export const deletePopupFromIndexedDb = async (
   }
 };
 
+//? fetch the banner to show
+
 export const fetchFirstPopup = async () => {
   try {
-    const popups = await db.popups.toArray();
-    return popups.length ? popups[popups.length - 1] : null;
+    const popups = await db.popups
+      .where('priority')
+      .belowOrEqual(2)
+      .reverse()
+      .toArray();
+    popups.sort((a, b) => b.createdAt - a.createdAt);
+
+    return popups[0];
   } catch (error) {
     console.error('Failed to fetch the last popup:', error);
     return null;
   }
 };
+//? Delete many popups By Id
 
 export const deleteManyPopup = async (popupIds: string[]) => {
   try {
@@ -70,27 +82,16 @@ export const deleteManyPopup = async (popupIds: string[]) => {
     console.error('Failed to delete the popups:', error);
   }
 };
+//? add popup to indexed db
 
-export const putPopupInCorrectPlace = async (newPopup: any) => {
+export const addPopupToIndexedDb = async (popup: any) => {
   try {
-    const existingPopups = await db.popups.toArray();
-
-    let inserted = false;
-    for (let i = 0; i < existingPopups.length; i++) {
-      if (newPopup.priority >= existingPopups[i].priority) {
-        await db.popups.add(newPopup);
-        inserted = true;
-        break;
-      }
-    }
-
-    if (!inserted) {
-      await db.popups.add(newPopup);
-    }
+    await db.popups.add(popup);
   } catch (error) {
-    console.error('Error adding popup:', error);
+    console.error('Failed to add the popup:', error);
   }
 };
+
 //! BANNER DB METHODS ----------------------------------------------------------------
 
 //? save many banners in indexedDB

@@ -35,7 +35,7 @@ export const ParentComponent = ({
     if (!existingPopup || response.priority >= existingPopup.priority) {
       renderService({ response, serviceType: 'popup', userBaseInfo });
     }
-    await IN_DB.putPopupInCorrectPlace(response);
+    await IN_DB.addPopupToIndexedDb(response);
   };
 
   const handleBanner = async (response: any) => {
