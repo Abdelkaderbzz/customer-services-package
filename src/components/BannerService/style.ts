@@ -4,15 +4,14 @@ export const bannerServicePreview = {
   position: 'fixed',
   left: '0',
   textAlign: 'center',
-  padding: '30px',
-  fontSize: '18px',
+  padding: '11px 30px',
+  fontSize: '15px',
   zIndex: 1000,
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'center',
   alignItems: 'center',
   gap: '15px',
-  height: '56px',
 };
 export const floatingBannerStyle = {
   margin: '20px',
