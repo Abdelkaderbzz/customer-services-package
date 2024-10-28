@@ -58,15 +58,17 @@ export const ParentComponent = ({
   };
 
   const handleCancelBanner = async ({ canceledIds }: any) => {
-    await IN_DB.deleteManyBanners(canceledIds);
-    const displayedBannerId = getIdOfDisplayedBanner();
-    if (canceledIds?.includes(displayedBannerId)) {
-      cancelBannerTrigger(userBaseInfo);
+    if (canceledIds?.length > 0) {
+      await IN_DB.deleteManyBanners(canceledIds);
+      const displayedBannerId = getIdOfDisplayedBanner();
+      if (canceledIds?.includes(displayedBannerId)) {
+        cancelBannerTrigger(userBaseInfo);
+      }
     }
   };
   async function handleNotifications() {
     const res = await getVersion(appId);
-    const appVersion=`app_version_${userBaseInfo.memberId}`
+    const appVersion = `app_version_${userBaseInfo.memberId}`;
     let currentVersion = window.localStorage.getItem(appVersion) || 'empty';
     if (currentVersion !== res.version.toString()) {
       window.localStorage.setItem(appVersion, res.version);
@@ -104,9 +106,8 @@ export const ParentComponent = ({
   }
 
   onMessageListener();
-  useEffect(() =>
-  {
-    IN_DB.initializeDb(userBaseInfo.memberId)
+  useEffect(() => {
+    IN_DB.initializeDb(userBaseInfo.memberId);
     const currentUser = {
       devices: 'web',
       appId,

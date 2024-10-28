@@ -6,14 +6,14 @@ const BASE_SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL;
 
 let socket: Socket<DefaultEventsMap, DefaultEventsMap>;
 
-export const initiateSocket = ({ memberId }: { memberId :string}) => {
+export const initiateSocket = ({ memberId }: { memberId: string }) => {
   socket = io(BASE_SOCKET_URL, {
     transports: ['websocket'],
     secure: true,
     query: {
       'x-client-id': memberId,
     },
-  });  
+  });
 };
 
 export const disconnectSocket = (): void => {
@@ -28,9 +28,7 @@ export const subscribeToEvent = <T>(
   socket.on(eventName, callback);
 };
 
-export const emitEvent = <T>(eventName: string, data: T): void =>
-{
+export const emitEvent = <T>(eventName: string, data: T): void => {
   if (!socket) return;
   socket.emit(eventName, data);
 };
-

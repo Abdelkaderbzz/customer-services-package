@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect } from 'react';
-import { closePopup, closePopupWithoutHeyServer } from '../../utils/closePopup';
+import { closePopup, destroyServiceFromTheDom } from '../../utils/closePopup';
 import { translations } from '../../utils/translation';
 import { postComment, postReact } from '../../api/interaction';
 import {
@@ -23,10 +23,10 @@ const PopupService = ({
     const overLay = getElementByClass('overlay-popups');
     const normalClose = getElementByClass('close-btn');
     overLay?.addEventListener('click', () => {
-      closePopupWithoutHeyServer();
+      destroyServiceFromTheDom('popup');
     });
     normalClose?.addEventListener('click', () => {
-      closePopupWithoutHeyServer();
+      destroyServiceFromTheDom('popup');
     });
     const buttons: any = getManyElementByClass('btn-234-custom');
     buttons.forEach(function (button: any) {
