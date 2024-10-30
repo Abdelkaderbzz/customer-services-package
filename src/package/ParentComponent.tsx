@@ -7,7 +7,12 @@ import {
   subscribeToEvent,
 } from '../utils/socket';
 import { ITakiPopupsProps } from './TakiPopups.types';
-import { cancelBannerTrigger, cancelPopupTrigger } from '../utils/closePopup';
+import {
+  cancelBannerTrigger,
+  cancelPopupTrigger,
+  renderBanner,
+  renderPopup,
+} from '../utils/closePopup';
 import { onMessageListener } from '../firebase/message';
 import * as IN_DB from '../cache/indexedDB';
 import { renderService } from '../hooks/renderService';
@@ -32,19 +37,24 @@ export const ParentComponent = ({
   };
   const handlePopup = async (response: any) => {
     const existingPopup = await IN_DB.fetchFirstPopup();
-    if (!existingPopup || response.priority >= existingPopup.priority) {
-      renderService({ response, serviceType: 'popup', userBaseInfo });
+    const incomingPriority = response?.priority;
+    const currentPriority = existingPopup?.priority;
+    if (response?.href === 'all' || window.location.href === response?.href) {
+      if (!existingPopup || incomingPriority >= currentPriority) {
+        renderService({ response, serviceType: 'popup', userBaseInfo });
+      }
     }
     await IN_DB.addPopupToIndexedDb(response);
   };
 
   const handleBanner = async (response: any) => {
     const existingBanner = await IN_DB.fetchFirstBanner();
-    if (
-      !existingBanner ||
-      response?.settings?.priority >= existingBanner?.settings?.priority
-    ) {
-      renderService({ response, serviceType: 'banner', userBaseInfo });
+    const incomingPriority = response?.settings?.priority;
+    const currentPriority = existingBanner?.settings?.priority;
+    if (response?.href === 'all' || window.location.href === response?.href) {
+      if (!existingBanner || incomingPriority >= currentPriority) {
+        renderService({ response, serviceType: 'banner', userBaseInfo });
+      }
     }
     await IN_DB.addBannerToIndexedDb(response);
   };
@@ -91,21 +101,25 @@ export const ParentComponent = ({
       }
     }
 
-    const popupRes = await IN_DB.fetchFirstPopup();
-    if (popupRes) {
-      renderService({ response: popupRes, serviceType: 'popup', userBaseInfo });
-    }
-    const bannerRes = await IN_DB.fetchFirstBanner();
-    if (bannerRes) {
-      renderService({
-        response: bannerRes,
-        serviceType: 'banner',
-        userBaseInfo,
-      });
-    }
+    renderPopup(userBaseInfo);
+    renderBanner(userBaseInfo);
   }
 
   onMessageListener();
+  useEffect(() => {
+    const displayedPopupId = getIdOfDisplayedPopup();
+    const displayedBannerId = getIdOfDisplayedBanner();
+    IN_DB.fetchFirstBanner().then((res) => {
+      if (res && res.banner_id !== displayedBannerId) {
+        renderService({ response: res, serviceType: 'banner', userBaseInfo });
+      }
+    });
+    IN_DB.fetchFirstPopup().then((res) => {
+      if (res && res.id !== displayedPopupId) {
+        renderService({ response: res, serviceType: 'popup', userBaseInfo });
+      }
+    });
+  }, [window.location.href]);
   useEffect(() => {
     IN_DB.initializeDb(userBaseInfo.memberId);
     const currentUser = {

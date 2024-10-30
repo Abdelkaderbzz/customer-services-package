@@ -22,14 +22,17 @@ export const destroyServiceFromTheDom = (service: string) => {
     getElementByClass('banner_service_preview')?.remove();
   }
 };
-const renderPopup = (userBaseInfo: IBaseInfo) => {
-  fetchFirstPopup().then((res) => {
+export const renderPopup = (userBaseInfo: IBaseInfo) => {
+  fetchFirstPopup().then((res) =>
+  {
     if (res) {
       renderService({ response: res, serviceType: 'popup', userBaseInfo });
     }
   });
 };
-const renderBanner = (userBaseInfo: IBaseInfo) => {
+export const renderBanner = (userBaseInfo: IBaseInfo) =>
+{
+  
   fetchFirstBanner().then((res) => {
     if (res) {
       renderService({ response: res, serviceType: 'banner', userBaseInfo });

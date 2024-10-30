@@ -7,8 +7,8 @@ class TodoDatabase extends Dexie {
   constructor(dbName: string) {
     super(`taki_popups_${dbName}`);
     this.version(1).stores({
-      popups: 'id,createdAt,priority,url',
-      banners: '++id,createdAt,banner_id,settings.priority',
+      popups: 'id,createdAt,priority,href',
+      banners: '++id,createdAt,banner_id,settings.priority,href',
     });
   }
 }
@@ -42,7 +42,7 @@ export const fetchPopupsUsingUrl = async (url: string) => {
     return [];
   }
 };
-//? delete single popup by id 
+//? delete single popup by id
 
 export const deletePopupFromIndexedDb = async (
   id: string | null | undefined
@@ -63,11 +63,15 @@ export const fetchFirstPopup = async () => {
       .belowOrEqual(2)
       .reverse()
       .toArray();
-    popups.sort((a, b) => b.createdAt - a.createdAt);
+    const currentUrl = window.location.href;
+    let filteredPopups = popups.sort((a, b) => b.createdAt - a.createdAt);
+    filteredPopups = popups.filter(
+      (popup) => popup.href === currentUrl || popup.href === 'all'
+    );
 
-    return popups[0];
+    return filteredPopups[0]||null;
   } catch (error) {
-    console.error('Failed to fetch the last popup:', error);
+    console.error('Failed to fetch the last popup:');
     return null;
   }
 };
@@ -114,16 +118,20 @@ export const clearBannerStore = async () => {
 
 export const fetchFirstBanner = async () => {
   try {
+    const currentUrl = window.location.href;
     const banners = await db.banners
       .where('settings.priority')
       .belowOrEqual(2)
       .reverse()
       .toArray();
-    banners.sort((a, b) => b.createdAt - a.createdAt);
+    let filteredBanners = banners.sort((a, b) => b.createdAt - a.createdAt);
+    filteredBanners = banners.filter(
+      (banner) => banner.href === currentUrl || banner.href === 'all'
+    );
 
-    return banners[0];
+    return filteredBanners[0]||null;
   } catch (error) {
-    console.error('Failed to fetch the last banner:', error);
+    console.error('Failed to fetch the last banner:');
     return null;
   }
 };
