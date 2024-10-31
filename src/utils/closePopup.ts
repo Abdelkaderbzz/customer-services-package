@@ -12,8 +12,8 @@ import {
 } from './getCurrentServices';
 import { getElementByClass } from './getElement';
 interface IBaseInfo {
-  memberId: string;
-  name: string;
+  memberId: any;
+  name: any;
 }
 export const destroyServiceFromTheDom = (service: string) => {
   if (service === 'popup') {

@@ -2,23 +2,24 @@ import { ParentComponent } from './ParentComponent';
 import { ITakiPopupsProps } from './TakiPopups.types';
 import { createRoot } from 'react-dom/client';
 import { useEffect } from 'react';
+import { getGuestId, getGuestName } from '../utils/generateRandomStrings';
 
 export function TakiPopups({
   name,
   appId,
   memberId,
   meta_data,
+  guest_mode,
 }: ITakiPopupsProps) {
   useEffect(() => {
     const App = () => {
-      return (
-        <ParentComponent
-          name={name}
-          appId={appId}
-          memberId={memberId}
-          meta_data={meta_data}
-        />
-      );
+      const props = guest_mode
+        ? { appId, name: getGuestName(), memberId: getGuestId(), meta_data: {} }
+        : memberId
+        ? { appId, name, memberId, meta_data }
+        : null;
+
+      return props ? <ParentComponent {...props} /> : null;
     };
 
     const container = document.createElement('div');

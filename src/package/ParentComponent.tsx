@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useGoogleFonts from '../hooks/useGoogleFonts';
-import { getGuestId, getGuestName } from '../utils/generateRandomStrings';
+
 import {
   disconnectSocket,
   initiateSocket,
@@ -32,8 +32,8 @@ export const ParentComponent = ({
 }: ITakiPopupsProps) => {
   useGoogleFonts();
   const userBaseInfo = {
-    name: name || getGuestName(),
-    memberId: memberId ? memberId?.toString() : getGuestId(),
+    name,
+    memberId: memberId?.toString(),
   };
   const handlePopup = async (response: any) => {
     const existingPopup = await IN_DB.fetchFirstPopup();
@@ -121,7 +121,7 @@ export const ParentComponent = ({
     });
   }, [window.location.href]);
   useEffect(() => {
-    IN_DB.initializeDb(userBaseInfo.memberId);
+    IN_DB.initializeDb(userBaseInfo.memberId as string);
     const currentUser = {
       devices: 'web',
       appId,
